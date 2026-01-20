@@ -1,0 +1,69 @@
+# ===== Java =====
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+.settings/
+.classpath
+.project
+
+# ===== Node.js / 前端 =====
+node_modules/
+dist/
+.output/
+.nuxt/
+.next/
+*.local
+
+# UniApp
+unpackage/
+
+# ===== macOS =====
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ===== 环境变量 =====
+.env
+.env.local
+.env.*.local
+*.env
+
+# ===== 日志 =====
+*.log
+logs/
+
+# ===== 临时文件 =====
+tmp/
+temp/
+*.tmp
+*.bak
+
+# ===== AI 助手工作目录 =====
+.sisyphus/
