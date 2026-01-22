@@ -6,6 +6,20 @@
 
 ## [未发布]
 
+### 2026-01-23
+
+#### 变更
+- 重构 OpenCode AI 助手配置系统
+  - 重命名 `.opencode/AGENT.md` -> `.opencode/AGENTS.md`
+  - 新增项目级 `AGENTS.md`（328 行，包含完整开发规范）
+  - 新增 `.opencode/skills/` 目录，包含 6 个专业技能包：
+    - antigravity-code-reviewer（代码审查专家）
+    - antigravity-code-style（代码风格专家）
+    - antigravity-frontend-mentor（前端导师）
+    - antigravity-java-expert（Java 专家）
+    - antigravity-prd-writer（PRD 撰写专家）
+    - antigravity-python-ai（Python AI 开发专家）
+
 ### 2024-01-20
 
 #### 新增
