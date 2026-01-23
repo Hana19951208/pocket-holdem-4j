@@ -261,6 +261,10 @@ void royalFlushShouldBeatFourOfAKind() {
 1. **更新 `docs/CHANGELOG.md`** - 记录日期、变更内容、影响文件
 2. **检查 `README.md`** - 新功能或结构变化需同步更新
 3. **更新 `docs/PLAN.md`** - 完成的任务标记 `[x]`
+4. **自主提交代码** - 完成上述文档更新后，自动调用 `commit-manager` subagent 进行代码提交
+   - 使用 `commit-manager` 自动分析变更并生成符合 Conventional Commits 标准的提交信息
+   - 无需等待用户明确提示，在文件更新完成后即可自主执行提交流程
+   - 提交信息需使用中文，清晰描述变更内容
 
 ---
 
