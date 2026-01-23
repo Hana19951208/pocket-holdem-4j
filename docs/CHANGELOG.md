@@ -24,6 +24,11 @@
   - 新增 `server/src/test/java/com/pocketholdem/model/SuitTest.java`
   - 使用 `@JsonValue` 输出英文序列化值
   - 4 种花色：CLUBS, DIAMONDS, HEARTS, SPADES
+- 实现牌型等级枚举 HandRank（TDD 流程）
+  - 新增 `server/src/main/java/com/pocketholdem/model/HandRank.java`
+  - 新增 `server/src/test/java/com/pocketholdem/model/HandRankTest.java`
+  - 使用 `@JsonValue` 输出 snake_case 序列化值
+  - 10 种牌型：HIGH_CARD(1) ~ ROYAL_FLUSH(10)
 
 #### 变更
 - 重构 OpenCode AI 助手配置系统

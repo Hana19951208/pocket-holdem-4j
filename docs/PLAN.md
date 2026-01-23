@@ -166,8 +166,9 @@
   - 测试: PlayerStatusTest.java (~1个测试)
 
 ##### 1.3 牌型常量
-- [ ] **HandRanking.java** - 牌型等级常量
-  - 常量: HIGH_CARD(0) ~ ROYAL_FLUSH(9)
+- [x] **HandRank.java** - 牌型等级枚举
+  - 值: HIGH_CARD(1) ~ ROYAL_FLUSH(10)
+  - 测试: HandRankTest.java (4个测试)
 
 ---
 
