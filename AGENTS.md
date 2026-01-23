@@ -258,7 +258,7 @@ void royalFlushShouldBeatFourOfAKind() {
 
 每次修改代码后，**必须**：
 
-1. **更新 `docs/CHANGELOG.md`** - 记录日期、变更内容、影响文件
+1. **更新 `docs/CHANGELOG.md`** - 按照`commit-manager`的规范来更新。并按照时间(精确到分钟)倒序记录
 2. **检查 `README.md`** - 新功能或结构变化需同步更新
 3. **更新 `docs/PLAN.md`** - 完成的任务标记 `[x]`
 4. **自主提交代码** - 完成上述文档更新后，自动调用 `commit-manager` subagent 进行代码提交
@@ -292,12 +292,9 @@ void royalFlushShouldBeatFourOfAKind() {
 
 ### 必须做
 
-- [x] 所有回复使用 **中文**
 - [x] 所有代码注释使用 **中文**
 - [x] 所有 Git 提交信息使用 **中文**
 - [x] 实现前先参考原 TypeScript 代码
-- [x] 完成后运行 `mvn test` 验证
-- [x] 变更后更新 CHANGELOG.md
 
 ### 禁止做
 
@@ -326,7 +323,4 @@ void royalFlushShouldBeatFourOfAKind() {
 1. **编码前**: 阅读原项目对应的 TypeScript 实现
 2. **编码中**: 中文注释，遵循上述规范
 3. **编码后**:
-   - 运行 `./mvnw test`
-   - 更新 `docs/CHANGELOG.md`
-   - 检查 `README.md` 是否需要同步
    - 在 `docs/PLAN.md` 标记完成的任务

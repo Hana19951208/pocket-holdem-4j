@@ -17,6 +17,7 @@ class ChipCalculatorTest {
     @DisplayName("溢出加法应该抛出异常")
     void overflowAdditionShouldThrowException() {
         int max = Integer.MAX_VALUE;
+        // MAX_VALUE + 1 应该抛出异常
         assertThrows(ArithmeticException.class,
             () -> ChipCalculator.safeAdd(max, 1));
     }
@@ -31,6 +32,7 @@ class ChipCalculatorTest {
     @DisplayName("下溢减法应该抛出异常")
     void underflowSubtractionShouldThrowException() {
         int min = Integer.MIN_VALUE;
+        // MIN_VALUE - 1 应该抛出异常
         assertThrows(ArithmeticException.class,
             () -> ChipCalculator.safeSubtract(min, 1));
     }
