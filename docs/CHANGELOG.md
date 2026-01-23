@@ -9,6 +9,20 @@
 ### 2026-01-23
 
 #### 新增
+- 实现底池分配逻辑（支持平分和余数处理）（TDD 流程）
+  - 更新 `PotCalculator.java`
+    - 新增 `awardPots()` 方法 - 分配底池给获胜玩家
+    - 新增 `findWinners()` 私有方法 - 找出某个底池的最高分玩家
+    - 新增 `distributePot()` 私有方法 - 分配底池给获胜者
+    - 所有筹码计算使用 `ChipCalculator` 安全运算
+    - 支持多个获胜者平分底池
+    - 支持余数按座位顺序分配（第一个玩家多拿余数）
+    - 支持边池分配给有资格的玩家
+  - 新增 4 个测试用例：
+    - `shouldAwardPotToSingleWinner()` - 单个获胜者获得全部底池
+    - `shouldSplitPotAmongMultipleWinners()` - 多个获胜者平分底池
+    - `shouldDistributeRemainderBySeatOrder()` - 余数按座位顺序分配
+    - `shouldAwardSidePotToEligiblePlayers()` - 边池分配给有资格的玩家
 - 实现底池数据结构 Pot（TDD 流程）
   - 新增 `server/src/main/java/com/pocketholdem/model/Pot.java`
   - 新增 `server/src/test/java/com/pocketholdem/model/PotTest.java`
