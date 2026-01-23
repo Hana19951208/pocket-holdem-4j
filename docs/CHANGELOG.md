@@ -9,6 +9,11 @@
 ### 2026-01-23
 
 #### 新增
+- 实现点数枚举 Rank（TDD 流程）
+  - 新增 `server/src/main/java/com/pocketholdem/model/Rank.java`
+  - 新增 `server/src/test/java/com/pocketholdem/model/RankTest.java`
+  - 使用 `@JsonValue` 输出英文序列化值
+  - 13 个点数：TWO(2) ~ ACE(14)，其中 J=11, Q=12, K=13, A=14
 - 实现花色枚举 Suit（TDD 流程）
   - 新增 `server/src/main/java/com/pocketholdem/model/Suit.java`
   - 新增 `server/src/test/java/com/pocketholdem/model/SuitTest.java`
