@@ -9,6 +9,40 @@
 ### 2026-01-23
 
 #### 新增
+- 完成阶段1：核心引擎开发（TDD流程，子冲刺A/B/C）
+  - 子冲刺A：基础数据结构实现
+    - Suit 枚举（花色）
+    - Rank 枚举（点数）
+    - Card Record（扑克牌）
+    - HandRank 枚举（牌型等级）
+    - ChipCalculator 工具类（溢出检查）
+  - 子冲刺B：牌型评估逻辑实现
+    - PokerEngine 框架和基础方法
+    - 顺子检测（包括轮盘顺A-2-3-4-5）
+    - 牌型分组（四条、三条、对子、葫芦）
+    - 从7张牌中找出最佳5张组合
+    - 完整的比牌逻辑（支持踢脚牌比较）
+  - 子冲刺C：底池与边池算法实现
+    - Pot Record（底池数据结构）
+    - 边池计算核心算法（calculateSidePots）
+    - 底池分配逻辑（支持平分和余数处理）
+- 添加 JaCoCo 覆盖率插件到 pom.xml
+- 总测试用例：48 个（全部通过）
+- 覆盖率：87%（超过 >85% 目标）
+
+#### 测试结果
+```
+Tests run: 48, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+#### 技术亮点
+- 严格遵循 TDD 流程（测试先行）
+- 所有筹码计算使用 ChipCalculator 且包含溢出检查
+- 所有 Record 类使用 @JsonProperty 指定 snake_case
+- 所有枚举使用 @JsonValue 输出英文值
+- 代码注释全部使用简体中文
+- score 使用 long 类型防止整数溢出
 - 实现底池分配逻辑（支持平分和余数处理）（TDD 流程）
   - 更新 `PotCalculator.java`
     - 新增 `awardPots()` 方法 - 分配底池给获胜玩家
