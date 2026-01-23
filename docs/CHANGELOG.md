@@ -19,6 +19,17 @@
     - antigravity-java-expert（Java 专家）
     - antigravity-prd-writer（PRD 撰写专家）
     - antigravity-python-ai（Python AI 开发专家）
+- 完善项目实施计划（docs/PLAN.md）
+  - 整合架构师视角的核心考量点（架构对齐与差异处理、数据一致性与类型安全）
+  - 新增阶段0：架构设计文档补充（2天）
+  - 新增阶段四：测试与优化专项（2天）
+  - 调整总工期至15-18天，新增255个测试方法，覆盖率达>80%
+- 新增架构整改建议文档（.sisyphus/architecture-review-recommendations.md）
+  - 对照原TS项目，识别10项核心改进建议
+  - 定义P0/P1/P2风险项分级（3/3/2项）
+  - 提供完整的6阶段实施方案
+- 新增阶段0详细计划（.sisyphus/plans/phase0-architecture-design.md）
+  - 包含5份架构设计文档：并发模型、DTO体系、数值计算、STOMP适配、测试策略
 
 ### 2024-01-20
 
