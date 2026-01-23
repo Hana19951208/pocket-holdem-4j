@@ -131,7 +131,15 @@ BUILD SUCCESS
     - `shouldNotRecognizeNonStraight()` - 非顺子（缺一张）
     - `shouldRecognizeStraightFlush()` - 同花顺 2-3-4-5-6
 
-  #### 变更
+   #### 变更
+- 补充阶段二实施计划（docs/PLAN.md）
+  - 新增 5 个关键遗漏点的实施任务
+  - Room GC 清理机制（P0 整改任务）
+  - Host Migration 房主转移（P1 整改任务）
+  - Timer Retry 指数退避重试（P1 整改任务）
+  - Rebuy System 筹码补充与复活（P1 整改任务）
+  - Logic/IO Separation 逻辑与IO分离（P2 整改任务）
+  - 关联 phase2-supplement.md 详细设计方案
 - 重构 OpenCode AI 助手配置系统
   - 重命名 `.opencode/AGENT.md` -> `.opencode/AGENTS.md`
   - 新增项目级 `AGENTS.md`（328 行，包含完整开发规范）
