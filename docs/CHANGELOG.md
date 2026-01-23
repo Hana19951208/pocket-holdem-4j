@@ -9,6 +9,11 @@
 ### 2026-01-23
 
 #### 新增
+- 实现筹码计算工具类 ChipCalculator（TDD 流程）
+  - 新增 `server/src/main/java/com/pocketholdem/util/ChipCalculator.java`
+  - 新增 `server/src/test/java/com/pocketholdem/util/ChipCalculatorTest.java`
+  - 支持安全加法、减法、乘法、除法运算，包含溢出检查
+  - 提供筹码增减合法性验证方法 `validateIncrement()` 和 `validateDecrement()`
 - 实现扑克牌Record Card（TDD 流程）
   - 新增 `server/src/main/java/com/pocketholdem/model/Card.java`
   - 新增 `server/src/test/java/com/pocketholdem/model/CardTest.java`

@@ -165,7 +165,13 @@
   - 值: WAITING, PLAYING, FOLDED, ALL_IN, ELIMINATED
   - 测试: PlayerStatusTest.java (~1个测试)
 
-##### 1.3 牌型常量
+##### 1.3 工具类
+- [x] **ChipCalculator.java** - 筹码计算工具类
+  - 方法: safeAdd(), safeSubtract(), safeMultiply(), safeDivide()
+  - 方法: validateIncrement(), validateDecrement()
+  - 测试: ChipCalculatorTest.java (8个测试，含溢出检查)
+
+##### 1.4 牌型常量
 - [x] **HandRank.java** - 牌型等级枚举
   - 值: HIGH_CARD(1) ~ ROYAL_FLUSH(10)
   - 测试: HandRankTest.java (4个测试)
