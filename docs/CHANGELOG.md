@@ -9,6 +9,12 @@
 ### 2026-01-23
 
 #### 新增
+- 实现底池数据结构 Pot（TDD 流程）
+  - 新增 `server/src/main/java/com/pocketholdem/model/Pot.java`
+  - 新增 `server/src/test/java/com/pocketholdem/model/PotTest.java`
+  - 使用 Record 定义不可变底池数据
+  - 使用 `@JsonProperty` 指定 snake_case 序列化
+  - 测试覆盖：底池创建、JSON 序列化
 - 实现从7张牌中找出最佳5张组合（TDD 流程）
   - 更新 `PokerEngine.evaluateHand()` 方法
     - 合并手牌和公共牌（共7张）

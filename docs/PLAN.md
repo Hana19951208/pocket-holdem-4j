@@ -192,7 +192,8 @@ public record Card(Suit suit, Rank rank) {
 ```java
 public record Pot(int amount, List<String> eligiblePlayers);
 ```
-- 测试: PotTest.java (~2个测试)
+- [x] 实现：Pot.java
+- [x] 测试: PotTest.java (2个测试)
 
 ##### 2.3 EvaluatedHand - 评估后的手牌
 ```java
