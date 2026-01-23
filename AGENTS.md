@@ -29,17 +29,17 @@ java -version  # 应显示 openjdk 17.x
 cd server
 
 # 编译项目
-mvn compile
+./mvnw compile
 
 # 运行应用
-mvn spring-boot:run
+./mvnw spring-boot:run
 # 服务运行在 http://localhost:8080
 
 # 清理并构建
-mvn clean package
+./mvnw clean package
 
 # 跳过测试构建
-mvn clean package -DskipTests
+./mvnw clean package -DskipTests
 ```
 
 ### 测试命令
@@ -48,29 +48,29 @@ mvn clean package -DskipTests
 cd server
 
 # 运行全部测试
-mvn test
+./mvnw test
 
 # 运行单个测试类
-mvn test -Dtest=PokerEngineTest
+./mvnw test -Dtest=PokerEngineTest
 
 # 运行单个测试方法
-mvn test -Dtest=PokerEngineTest#testFlush
+./mvnw test -Dtest=PokerEngineTest#testFlush
 
 # 模式匹配运行测试
-mvn test -Dtest=*Engine*
+./mvnw test -Dtest=*Engine*
 
 # 详细输出模式
-mvn test -X
+./mvnw test -X
 ```
 
 ### 验证命令
 
 ```bash
 # 仅检查编译是否通过
-mvn compile -q && echo "✅ 编译成功" || echo "❌ 编译失败"
+./mvnw compile -q && echo "✅ 编译成功" || echo "❌ 编译失败"
 
 # 运行单元测试（排除集成测试）
-mvn test -Dtest=\!*IntegrationTest
+./mvnw test -Dtest=\!*IntegrationTest
 ```
 
 ---
@@ -115,7 +115,7 @@ pocket-holdem-4j/
 | 语言 | Java | 17 |
 | 框架 | Spring Boot | 3.2.x |
 | 通信 | WebSocket (STOMP) | - |
-| 构建工具 | Maven | 3.9+ |
+| 构建工具 | Maven Wrapper | 3.9+ |
 | 测试框架 | JUnit 5 | 5.x |
 | 工具库 | Lombok | latest |
 | JSON | Jackson | latest |
@@ -322,7 +322,7 @@ void royalFlushShouldBeatFourOfAKind() {
 1. **编码前**: 阅读原项目对应的 TypeScript 实现
 2. **编码中**: 中文注释，遵循上述规范
 3. **编码后**:
-   - 运行 `mvn test`
+   - 运行 `./mvnw test`
    - 更新 `docs/CHANGELOG.md`
    - 检查 `README.md` 是否需要同步
    - 在 `docs/PLAN.md` 标记完成的任务
