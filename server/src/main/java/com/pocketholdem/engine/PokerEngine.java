@@ -2,7 +2,7 @@ package com.pocketholdem.engine;
 
 import com.pocketholdem.model.*;
 
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * 扑克引擎（纯函数工具类）
@@ -21,8 +21,8 @@ public final class PokerEngine {
         Card[] sorted = Arrays.copyOf(cards, 5);
         Arrays.sort(sorted, (a, b) -> Integer.compare(b.rank().getValue(), a.rank().getValue()));
 
+        CardGroups groups = groupCards(sorted);
         Card[] straight = detectStraight(sorted);
-
         boolean isFlush = Arrays.stream(cards)
             .map(Card::suit)
             .distinct()
@@ -36,12 +36,74 @@ public final class PokerEngine {
             }
         }
 
+        if (!groups.four().isEmpty()) {
+            Card[] best = new Card[5];
+            System.arraycopy(groups.four().toArray(new Card[0]), 0, best, 0, 4);
+            best[4] = groups.singles().get(0);
+            return createEvaluatedHand(HandRank.FOUR_OF_A_KIND, "四条", best);
+        }
+
+        if (!groups.three().isEmpty() && !groups.pairs().isEmpty()) {
+            Card[] best = new Card[5];
+            System.arraycopy(groups.three().toArray(new Card[0]), 0, best, 0, 3);
+            System.arraycopy(groups.pairs().toArray(new Card[0]), 0, best, 3, 2);
+            return createEvaluatedHand(HandRank.FULL_HOUSE, "葫芦", best);
+        }
+
         if (isFlush) {
             return createEvaluatedHand(HandRank.FLUSH, "同花", sorted);
         }
 
         if (straight != null) {
             return createEvaluatedHand(HandRank.STRAIGHT, "顺子", straight);
+        }
+
+        if (!groups.three().isEmpty()) {
+            Card[] best = new Card[5];
+            System.arraycopy(groups.three().toArray(new Card[0]), 0, best, 0, 3);
+            best[3] = groups.singles().get(0);
+            best[4] = groups.singles().get(1);
+            return createEvaluatedHand(HandRank.THREE_OF_A_KIND, "三条", best);
+        }
+
+        if (groups.pairs().size() >= 4) {
+            Card[] best = new Card[5];
+            Card[] pairsArray = groups.pairs().toArray(new Card[0]);
+            System.arraycopy(pairsArray, 0, best, 0, Math.min(pairsArray.length, 4));
+            for (int i = pairsArray.length, j = 0; i < 5 && j < groups.singles().size(); i++, j++) {
+                best[i] = groups.singles().get(j);
+            }
+            return createEvaluatedHand(HandRank.TWO_PAIR, "两对", best);
+        }
+
+        if (groups.pairs().size() >= 2) {
+            Card[] best = new Card[5];
+            Card[] pairsArray = groups.pairs().toArray(new Card[0]);
+            System.arraycopy(pairsArray, 0, best, 0, 2);
+            for (int i = 2, j = 0; i < 5 && j < groups.singles().size(); i++, j++) {
+                best[i] = groups.singles().get(j);
+            }
+            return createEvaluatedHand(HandRank.ONE_PAIR, "一对", best);
+        }
+
+        if (groups.pairs().size() >= 4) {
+            Card[] best = new Card[5];
+            Card[] pairsArray = groups.pairs().toArray(new Card[0]);
+            System.arraycopy(pairsArray, 0, best, 0, Math.min(pairsArray.length, 4));
+            for (int i = pairsArray.length, j = 0; i < 5 && j < groups.singles().size(); i++, j++) {
+                best[i] = groups.singles().get(j);
+            }
+            return createEvaluatedHand(HandRank.TWO_PAIR, "两对", best);
+        }
+
+        if (!groups.pairs().isEmpty()) {
+            Card[] best = new Card[5];
+            Card[] pairsArray = groups.pairs().toArray(new Card[0]);
+            System.arraycopy(pairsArray, 0, best, 0, Math.min(pairsArray.length, 2));
+            for (int i = pairsArray.length, j = 0; i < 5 && j < groups.singles().size(); i++, j++) {
+                best[i] = groups.singles().get(j);
+            }
+            return createEvaluatedHand(HandRank.ONE_PAIR, "一对", best);
         }
 
         return createEvaluatedHand(HandRank.HIGH_CARD, "高牌", sorted);
@@ -77,6 +139,46 @@ public final class PokerEngine {
         }
 
         return null;
+    }
+
+    /**
+     * 按点数统计牌型分组
+     */
+    private static CardGroups groupCards(Card[] sortedCards) {
+        Map<Rank, List<Card>> rankMap = new HashMap<>();
+
+        for (Card card : sortedCards) {
+            rankMap.computeIfAbsent(card.rank(), k -> new ArrayList<>()).add(card);
+        }
+
+        List<Card> four = new ArrayList<>();
+        List<Card> three = new ArrayList<>();
+        List<Card> pairs = new ArrayList<>();
+        List<Card> singles = new ArrayList<>();
+
+        for (List<Card> group : rankMap.values()) {
+            switch (group.size()) {
+                case 4:
+                    four.addAll(group);
+                    break;
+                case 3:
+                    three.addAll(group);
+                    break;
+                case 2:
+                    pairs.addAll(group);
+                    break;
+                case 1:
+                    singles.addAll(group);
+                    break;
+            }
+        }
+
+        four.sort((a, b) -> Integer.compare(b.rank().getValue(), a.rank().getValue()));
+        three.sort((a, b) -> Integer.compare(b.rank().getValue(), a.rank().getValue()));
+        pairs.sort((a, b) -> Integer.compare(b.rank().getValue(), a.rank().getValue()));
+        singles.sort((a, b) -> Integer.compare(b.rank().getValue(), a.rank().getValue()));
+
+        return new CardGroups(four, three, pairs, singles);
     }
 
     private static EvaluatedHand createEvaluatedHand(

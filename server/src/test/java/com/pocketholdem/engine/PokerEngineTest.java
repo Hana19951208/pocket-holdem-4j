@@ -84,4 +84,79 @@ class PokerEngineTest {
         EvaluatedHand result = PokerEngine.evaluateFiveCards(hand);
         assertEquals(HandRank.STRAIGHT_FLUSH, result.rank());
     }
+
+    @Test
+    @DisplayName("应该识别四条")
+    void shouldRecognizeFourOfAKind() {
+        Card[] hand = {
+            Card.of("spades", "ace"),
+            Card.of("hearts", "ace"),
+            Card.of("diamonds", "ace"),
+            Card.of("clubs", "ace"),
+            Card.of("spades", "king")
+        };
+
+        EvaluatedHand result = PokerEngine.evaluateFiveCards(hand);
+        assertEquals(HandRank.FOUR_OF_A_KIND, result.rank());
+    }
+
+    @Test
+    @DisplayName("应该识别三条")
+    void shouldRecognizeThreeOfAKind() {
+        Card[] hand = {
+            Card.of("spades", "ace"),
+            Card.of("hearts", "ace"),
+            Card.of("diamonds", "ace"),
+            Card.of("clubs", "king"),
+            Card.of("spades", "queen")
+        };
+
+        EvaluatedHand result = PokerEngine.evaluateFiveCards(hand);
+        assertEquals(HandRank.THREE_OF_A_KIND, result.rank());
+    }
+
+    @Test
+    @DisplayName("应该识别一对")
+    void shouldRecognizeOnePair() {
+        Card[] hand = {
+            Card.of("spades", "ace"),
+            Card.of("hearts", "ace"),
+            Card.of("diamonds", "king"),
+            Card.of("clubs", "queen"),
+            Card.of("spades", "jack")
+        };
+
+        EvaluatedHand result = PokerEngine.evaluateFiveCards(hand);
+        assertEquals(HandRank.ONE_PAIR, result.rank());
+    }
+
+    @Test
+    @DisplayName("应该识别两对")
+    void shouldRecognizeTwoPair() {
+        Card[] hand = {
+            Card.of("spades", "ace"),
+            Card.of("hearts", "ace"),
+            Card.of("diamonds", "king"),
+            Card.of("clubs", "king"),
+            Card.of("spades", "queen")
+        };
+
+        EvaluatedHand result = PokerEngine.evaluateFiveCards(hand);
+        assertEquals(HandRank.TWO_PAIR, result.rank());
+    }
+
+    @Test
+    @DisplayName("应该识别葫芦")
+    void shouldRecognizeFullHouse() {
+        Card[] hand = {
+            Card.of("spades", "ace"),
+            Card.of("hearts", "ace"),
+            Card.of("diamonds", "ace"),
+            Card.of("clubs", "king"),
+            Card.of("spades", "king")
+        };
+
+        EvaluatedHand result = PokerEngine.evaluateFiveCards(hand);
+        assertEquals(HandRank.FULL_HOUSE, result.rank());
+    }
 }
