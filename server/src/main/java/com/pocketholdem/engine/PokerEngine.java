@@ -190,7 +190,7 @@ public final class PokerEngine {
             .map(Card::rank)
             .toArray(Rank[]::new);
 
-        int score = calculateScore(rank, kickers);
+        long score = calculateScore(rank, kickers);
 
         return new EvaluatedHand(rank, rankName, bestCards, kickers, score);
     }
@@ -199,7 +199,53 @@ public final class PokerEngine {
      * 从手牌和公共牌中找出最佳5张牌组合
      */
     public static EvaluatedHand evaluateHand(Card[] holeCards, Card[] communityCards) {
-        return evaluateFiveCards(holeCards);
+        Card[] allCards = new Card[holeCards.length + communityCards.length];
+        System.arraycopy(holeCards, 0, allCards, 0, holeCards.length);
+        System.arraycopy(communityCards, 0, allCards, holeCards.length, communityCards.length);
+
+        List<Card[]> combinations = getCombinations(allCards, 5);
+
+        EvaluatedHand bestHand = null;
+        for (Card[] combo : combinations) {
+            EvaluatedHand evaluated = evaluateFiveCards(combo);
+            if (bestHand == null || evaluated.score() > bestHand.score()) {
+                bestHand = evaluated;
+            }
+        }
+
+        return bestHand;
+    }
+
+    /**
+     * 生成从n张牌中选k张的所有组合
+     */
+    private static List<Card[]> getCombinations(Card[] cards, int k) {
+        List<Card[]> result = new ArrayList<>();
+        Card[] current = new Card[k];
+        combine(cards, k, 0, 0, current, result);
+        return result;
+    }
+
+    /**
+     * 递归生成组合
+     */
+    private static void combine(
+            Card[] cards,
+            int k,
+            int start,
+            int index,
+            Card[] current,
+            List<Card[]> result) {
+
+        if (index == k) {
+            result.add(Arrays.copyOf(current, k));
+            return;
+        }
+
+        for (int i = start; i < cards.length; i++) {
+            current[index] = cards[i];
+            combine(cards, k, i + 1, index + 1, current, result);
+        }
     }
 
     /**
@@ -207,16 +253,16 @@ public final class PokerEngine {
      * 返回正数表示hand1更强，负数表示hand2更强，0表示平局
      */
     public static int compareHands(EvaluatedHand hand1, EvaluatedHand hand2) {
-        return Integer.compare(hand1.score(), hand2.score());
+        return Long.compare(hand1.score(), hand2.score());
     }
 
-    private static int calculateScore(HandRank rank, Rank[] kickers) {
-        int score = rank.getValue() * 100_000_000;
+    private static long calculateScore(HandRank rank, Rank[] kickers) {
+        long score = (long) rank.getValue() * 1_000_000_000L;
 
         for (int i = 0; i < kickers.length && i < 5; i++) {
             int kickerValue = kickers[i].getValue();
-            int weight = (int) Math.pow(10, 8 - i * 2);
-            score += kickerValue * weight;
+            long weight = (long) Math.pow(10, 8 - i * 2);
+            score += (long) kickerValue * weight;
         }
 
         return score;

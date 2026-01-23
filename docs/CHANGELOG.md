@@ -9,6 +9,21 @@
 ### 2026-01-23
 
 #### 新增
+- 实现从7张牌中找出最佳5张组合（TDD 流程）
+  - 更新 `PokerEngine.evaluateHand()` 方法
+    - 合并手牌和公共牌（共7张）
+    - 使用递归算法生成所有 C(7,5)=21 种组合
+    - 评估每个组合，选择得分最高的最佳5张
+  - 新增 `getCombinations()` 私有方法 - 生成从n张牌选k张的组合
+  - 新增 `combine()` 私有方法 - 递归回溯生成组合的核心逻辑
+  - 修复 `calculateScore()` 整数溢出问题
+    - 将返回值和中间变量从 `int` 改为 `long`
+    - ROYAL_FLUSH 分数超过 Integer.MAX_VALUE，导致溢出为负数
+  - 更新 `EvaluatedHand` Record 的 score 字段类型为 `long`
+  - 更新 `compareHands()` 使用 `Long.compare()`
+  - 新增 2 个7张牌测试用例：
+    - `shouldFindBestHandFromSevenCards()` - 从7张牌中找出皇家同花顺
+    - `shouldSelectFlushFromSevenCards()` - 从7张牌中选出同花
 - 实现筹码计算工具类 ChipCalculator（TDD 流程）
   - 新增 `server/src/main/java/com/pocketholdem/util/ChipCalculator.java`
   - 新增 `server/src/test/java/com/pocketholdem/util/ChipCalculatorTest.java`

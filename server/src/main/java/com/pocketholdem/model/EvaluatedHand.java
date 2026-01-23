@@ -8,5 +8,5 @@ public record EvaluatedHand(
         String rankName,        // 牌型名称
         Card[] bestCards,       // 最佳5张牌
         Rank[] kickers,         // 踢脚牌
-        int score               // 综合得分
+        long score              // 综合得分
 ) {}

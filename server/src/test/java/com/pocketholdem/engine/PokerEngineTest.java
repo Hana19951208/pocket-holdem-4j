@@ -159,4 +159,46 @@ class PokerEngineTest {
         EvaluatedHand result = PokerEngine.evaluateFiveCards(hand);
         assertEquals(HandRank.FULL_HOUSE, result.rank());
     }
+
+    @Test
+    @DisplayName("应该从2张手牌+5张公共牌中找出最佳组合")
+    void shouldFindBestHandFromSevenCards() {
+        Card[] holeCards = {
+            Card.of("spades", "ace"),
+            Card.of("spades", "king")
+        };
+
+        Card[] communityCards = {
+            Card.of("spades", "queen"),
+            Card.of("spades", "jack"),
+            Card.of("spades", "ten"),
+            Card.of("clubs", "two"),
+            Card.of("clubs", "three")
+        };
+
+        EvaluatedHand result = PokerEngine.evaluateHand(holeCards, communityCards);
+
+        assertEquals(HandRank.ROYAL_FLUSH, result.rank());
+    }
+
+    @Test
+    @DisplayName("应该从7张牌中选出同花")
+    void shouldSelectFlushFromSevenCards() {
+        Card[] holeCards = {
+            Card.of("spades", "ace"),
+            Card.of("hearts", "two")
+        };
+
+        Card[] communityCards = {
+            Card.of("spades", "king"),
+            Card.of("spades", "queen"),
+            Card.of("spades", "jack"),
+            Card.of("spades", "nine"),
+            Card.of("clubs", "ten")
+        };
+
+        EvaluatedHand result = PokerEngine.evaluateHand(holeCards, communityCards);
+
+        assertEquals(HandRank.FLUSH, result.rank());
+    }
 }
