@@ -43,10 +43,26 @@
     - 实现 `evaluateHand()` - 从手牌和公共牌中找出最佳5张牌组合
     - 实现 `compareHands()` - 比较两个牌型
     - 实现 `calculateScore()` - 计算牌型综合得分
-  - 新增 `server/src/test/java/com/pocketholdem/engine/PokerEngineTest.java`
-    - 测试引擎能够正确评估高牌
+   - 新增 `server/src/test/java/com/pocketholdem/engine/PokerEngineTest.java`
+     - 测试引擎能够正确评估高牌
+- 实现顺子检测功能（TDD 流程）
+  - 新增 `detectStraight()` 私有方法
+    - 支持常规顺子检测（5张连续点数）
+    - 支持轮盘顺（A-2-3-4-5）特殊处理
+    - 返回排序后的牌数组，非顺子返回 null
+  - 新增 `createEvaluatedHand()` 私有辅助方法
+  - 更新 `evaluateFiveCards()` 方法
+    - 添加顺子检测逻辑
+    - 添加同花检测逻辑
+    - 支持同花顺、皇家同花顺识别
+  - 修正 `shouldEvaluateHighCard()` 测试数据（原测试数据 A-K-Q-J-10 实际是顺子）
+  - 新增 4 个顺子相关测试：
+    - `shouldRecognizeNormalStraight()` - 常规顺子 3-4-5-6-7
+    - `shouldRecognizeWheelStraight()` - 轮盘顺 A-2-3-4-5
+    - `shouldNotRecognizeNonStraight()` - 非顺子（缺一张）
+    - `shouldRecognizeStraightFlush()` - 同花顺 2-3-4-5-6
 
-#### 变更
+  #### 变更
 - 重构 OpenCode AI 助手配置系统
   - 重命名 `.opencode/AGENT.md` -> `.opencode/AGENTS.md`
   - 新增项目级 `AGENTS.md`（328 行，包含完整开发规范）

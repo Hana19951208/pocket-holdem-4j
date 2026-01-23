@@ -21,16 +21,76 @@ public final class PokerEngine {
         Card[] sorted = Arrays.copyOf(cards, 5);
         Arrays.sort(sorted, (a, b) -> Integer.compare(b.rank().getValue(), a.rank().getValue()));
 
-        Rank[] kickers = Arrays.stream(sorted).map(Card::rank).toArray(Rank[]::new);
-        int score = calculateScore(HandRank.HIGH_CARD, kickers);
+        Card[] straight = detectStraight(sorted);
 
-        return new EvaluatedHand(
-            HandRank.HIGH_CARD,
-            "高牌",
-            sorted,
-            kickers,
-            score
-        );
+        boolean isFlush = Arrays.stream(cards)
+            .map(Card::suit)
+            .distinct()
+            .count() == 1;
+
+        if (isFlush && straight != null) {
+            if (straight[0].rank() == Rank.ACE && straight[1].rank() == Rank.KING) {
+                return createEvaluatedHand(HandRank.ROYAL_FLUSH, "皇家同花顺", straight);
+            } else {
+                return createEvaluatedHand(HandRank.STRAIGHT_FLUSH, "同花顺", straight);
+            }
+        }
+
+        if (isFlush) {
+            return createEvaluatedHand(HandRank.FLUSH, "同花", sorted);
+        }
+
+        if (straight != null) {
+            return createEvaluatedHand(HandRank.STRAIGHT, "顺子", straight);
+        }
+
+        return createEvaluatedHand(HandRank.HIGH_CARD, "高牌", sorted);
+    }
+
+    /**
+     * 检测是否为顺子
+     * 返回排序后的牌数组，如果不是顺子则返回null
+     */
+    private static Card[] detectStraight(Card[] sortedCards) {
+        boolean isConsecutive = true;
+        for (int i = 0; i < 4; i++) {
+            if (sortedCards[i].rank().getValue() - sortedCards[i + 1].rank().getValue() != 1) {
+                isConsecutive = false;
+                break;
+            }
+        }
+
+        if (isConsecutive) {
+            return sortedCards;
+        }
+
+        if (sortedCards[0].rank() == Rank.ACE &&
+            sortedCards[1].rank() == Rank.FIVE &&
+            sortedCards[2].rank() == Rank.FOUR &&
+            sortedCards[3].rank() == Rank.THREE &&
+            sortedCards[4].rank() == Rank.TWO) {
+
+            return new Card[] {
+                sortedCards[1], sortedCards[2], sortedCards[3],
+                sortedCards[4], sortedCards[0]
+            };
+        }
+
+        return null;
+    }
+
+    private static EvaluatedHand createEvaluatedHand(
+            HandRank rank,
+            String rankName,
+            Card[] bestCards) {
+
+        Rank[] kickers = Arrays.stream(bestCards)
+            .map(Card::rank)
+            .toArray(Rank[]::new);
+
+        int score = calculateScore(rank, kickers);
+
+        return new EvaluatedHand(rank, rankName, bestCards, kickers, score);
     }
 
     /**
