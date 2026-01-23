@@ -41,12 +41,12 @@
 |------|---------|-----------|-----------|--------|--------|
 | 阶段0 | 5份文档 | - | **2天** | 🔴 P0 | 3项P0 |
 | 阶段一 | 9个类 | ~102个 | **3天** | 🔴 P0 | 1项P0 |
-| 阶段二 | 5个类 | ~63个 | **2天** | 🟡 P1 | 1项P1 |
+| 阶段二 | 5个类 | ~63个 | **2天** | 🟡 P1 | 1项P1 + 5项新增 |
 | 阶段三 | WebSocket层 | ~30个 | **3-4天** | 🟡 P1 | 2项P1 |
 | 阶段四 | 测试与优化 | ~10个 | **2天** | 🟢 P2 | 2项P2 |
 | 阶段五 | UniApp前端 | ~50个 | **3天** | 🟡 P1 | - |
 | 阶段六 | 优化发布 | - | **2天** | 🟢 P2 | - |
-| **总计** | **19个类** | **~255个** | **15-18天** | - | **8项** |
+| **总计** | **19个类** | **~255个** | **15-18天** | - | **13项** |
 
 ---
 
@@ -331,9 +331,10 @@ public record EvaluatedHand(
 
 **前置依赖**: 阶段一完成
 
-**风险项**: 
+**风险项**:
 - 🟡 P1-1: 查询方法锁粒度过大
 - 🟡 P1-2: 查询方法去锁化
+- **新增** (来自补充设计): Room GC、Host Migration、Timer Retry、Rebuy System、Logic/IO Separation
 
 ### 实施原则
 1. **线程安全优先**: 所有共享状态使用锁或并发集合
@@ -447,6 +448,139 @@ public record EvaluatedHand(
     - 分配底池
   
   - 测试: GameControllerTest.java (~18个测试)
+
+---
+
+#### 🔴 P0 整改任务：实现 Room GC 清理机制 (3小时)
+
+**问题**: 当前未定义空闲房间何时销毁，会导致内存泄漏。
+
+- [ ] 创建 `RoomLifecycleManager.java`
+  - 事件驱动：玩家离开时触发延迟清理（2分钟）
+  - 定期扫描：每分钟扫描空闲房间（30分钟阈值）
+  - 重连支持：清理前二次检查，防止误删
+- [ ] 实现 `RoomManager.destroyRoom()` 方法
+  - 清理玩家映射
+  - 移除房间实例
+- [ ] 补充 `Room` 类字段
+  - `lastActivityTime` - 最后活动时间
+  - `getActivePlayerCount()` - 获取活跃玩家数量
+- [ ] 输出: `server/src/main/java/com/pocketholdem/service/RoomLifecycleManager.java`
+- [ ] 验收: 无内存泄漏，重连玩家数据不丢失
+
+**参考**: `docs/phase2-supplement.md` 第1节
+
+---
+
+#### 🟡 P1 整改任务：实现房主自动转移 (2小时)
+
+**问题**: 房主掉线或退出后，房间将变为无主状态，无法开始游戏。
+
+- [ ] 在 `Room.removePlayer()` 中添加房主转移逻辑
+  - 被移除的是房主且房间内还有其他人
+  - 自动将权限转移给 seatIndex 最小的在座玩家
+  - 异步广播 `HOST_CHANGED` 事件
+- [ ] 实现 `Room.transferHost()` 方法
+  - 候选玩家选择：在座、在线
+  - 排序规则：seatIndex 升序
+  - 更新 `isHost` 标记
+- [ ] 补充 `Player` 类字段
+  - `isHost` - 是否为房主
+  - `online` - 是否在线（WebSocket心跳更新）
+- [ ] 输出:
+  - 更新 `Room.java` 和 `Player.java`
+  - 新增 `EventType.HOST_TRANSFERRED` 事件类型
+- [ ] 验收: 房主离开后新房主正确接任，广播消息正确
+
+**参考**: `docs/phase2-supplement.md` 第2节
+
+---
+
+#### 🟡 P1 整改任务：实现定时器并发争抢重试机制 (3小时)
+
+**问题**: 30秒倒计时触发时，如果无法获取房间锁（tryLock 失败），超时逻辑会被跳过。
+
+- [ ] 创建 `TimerManager.java`
+  - 指数退避重试：500ms → 1000ms → 2000ms
+  - 重试上限：3次
+  - 失败降级：记录告警，通知运维
+- [ ] 实现锁争抢处理逻辑
+  - `tryLock(5, TimeUnit.SECONDS)` 超时控制
+  - 重试时使用 `ScheduledExecutorService` 重新调度
+  - 重试失败后调用 `AlertService` 记录错误
+- [ ] 实现定时器管理
+  - `scheduleRoomAction()` - 安排定时器
+  - `cancelTimer()` - 取消定时器
+  - ConcurrentHashMap 管理定时器映射
+- [ ] 输出:
+  - `server/src/main/java/com/pocketholdem/service/TimerManager.java`
+  - `server/src/main/java/com/pocketholdem/exception/ConcurrentLockException.java`
+  - `server/src/main/java/com/pocketholdem/service/AlertService.java`
+- [ ] 验收: 锁竞争时正确重试，失败后正确告警
+
+**参考**: `docs/phase2-supplement.md` 第3节
+
+---
+
+#### 🟡 P1 整改任务：实现筹码补充与复活系统 (3小时)
+
+**问题**: 玩家输光后只能退房，无法补充筹码继续玩。
+
+- [ ] 创建 `RebuyService.java`
+  - 状态转换：ELIMINATED → WAITING
+  - 执行时机：Hand End 时刻（或自己未参与时）
+  - 防作弊机制：
+    - 频率限制：每小时最多3次
+    - 手数限制：至少2手牌
+    - 金额上限：单人总筹码上限
+- [ ] 实现Rebuy逻辑
+  - 验证状态（必须 ELIMINATED）
+  - 验证时机（Hand End）
+  - 验证频率、手数、金额
+  - 执行筹码补充和状态转换
+- [ ] 实现 `PlayerRebuyRecord` 记录
+  - 记录 Rebuy 时间戳
+  - 计算等待时间
+  - 滑动窗口清理过期记录
+- [ ] 补充 WebSocket 消息
+  - `RebuyRequestMessage` - Rebuy请求
+  - `RebuyResponseMessage` - Rebuy响应
+- [ ] 输出:
+  - `server/src/main/java/com/pocketholdem/service/RebuyService.java`
+  - 更新 `PlayerStatus` 状态机文档
+- [ ] 验收: Rebuy功能正常，防作弊机制有效
+
+**参考**: `docs/phase2-supplement.md` 第4节
+
+---
+
+#### 🟢 P2 整改任务：实现逻辑与IO分离 (2小时)
+
+**问题**: 防止在锁内执行耗时IO（如WebSocket广播）导致阻塞。
+
+- [ ] 重构 `GameController.processAction()`
+  - 锁内：只修改内存状态，生成事件列表
+  - 锁外：异步执行IO（广播、日志等）
+- [ ] 实现 `GameEvent` 事件体系
+  - `SYNC_STATE` - 状态同步
+  - `PLAYER_ACTED` - 玩家行动
+  - `PHASE_CHANGED` - 阶段变化
+  - `HAND_RESULT` - 手牌结果
+- [ ] 实现 `GameEventBroadcaster.java`
+  - 使用 `@Async` 异步广播
+  - 支持批量事件发送
+  - 异常处理和日志记录
+- [ ] 补充 DTO 体系
+  - `PublicRoomInfo` - 公开房间信息
+  - `PublicPlayerInfo` - 公开玩家信息（无手牌）
+  - `PrivatePlayerInfo` - 私密玩家信息（含手牌）
+- [ ] 输出:
+  - 更新 `GameController.java` 和 `Room.java`
+  - 新增 `server/src/main/java/com/pocketholdem/dto/GameEvent.java`
+  - 新增 `server/src/main/java/com/pocketholdem/service/GameEventBroadcaster.java`
+- [ ] 验收: 锁内无IO操作，广播异步执行
+
+**参考**: `docs/phase2-supplement.md` 第5节
 
 ---
 
@@ -763,12 +897,12 @@ public record EvaluatedHand(
 |------|------|--------|-----------|--------|----------|
 | 阶段0：架构设计 | ⏳ 待开始 | 0% | **2天** | 🔴 P0 | 3项P0 |
 | 阶段一：核心引擎 | ⏳ 待开始 | 5% | **3天** | 🔴 P0 | 1项P0 |
-| 阶段二：状态管理 | ⏳ 待开始 | 0% | **2天** | 🟡 P1 | 1项P1 |
+| 阶段二：状态管理 | ⏳ 待开始 | 0% | **2天** | 🟡 P1 | 1项P1 + 5项新增 |
 | 阶段三：WebSocket层 | ⏳ 待开始 | 0% | **3-4天** | 🟡 P1 | 2项P1 |
 | 阶段四：测试优化 | ⏳ 待开始 | 0% | **2天** | 🟢 P2 | 2项P2 |
 | 阶段五：UniApp前端 | ⏳ 待开始 | 0% | **3天** | 🟡 P1 | - |
 | 阶段六：优化发布 | ⏳ 待开始 | 0% | **2天** | 🟢 P2 | - |
-| **总计** | **🔄 待开始** | **1%** | **15-18天** | - | **8项** |
+| **总计** | **🔄 待开始** | **1%** | **15-18天** | - | **13项** |
 
 ---
 
@@ -783,6 +917,7 @@ public record EvaluatedHand(
 
 docs/
 ├── PLAN.md                          # 本文件（总览计划，整改后）
+├── phase2-supplement.md             # 阶段二补充设计方案（新增）
 ├── concurrency-model.md             # 并发模型设计文档（阶段0.1）
 ├── dto-design-spec.md               # DTO设计规范（阶段0.2）
 ├── numeric-spec.md                  # 数值计算规范（阶段0.3）
