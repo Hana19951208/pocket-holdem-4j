@@ -34,6 +34,17 @@
   - 新增 `server/src/test/java/com/pocketholdem/model/HandRankTest.java`
   - 使用 `@JsonValue` 输出 snake_case 序列化值
   - 10 种牌型：HIGH_CARD(1) ~ ROYAL_FLUSH(10)
+- 实现 PokerEngine 框架和基础方法（TDD 流程）
+  - 新增 `server/src/main/java/com/pocketholdem/model/EvaluatedHand.java`
+    - 牌型评估结果 Record（包含 rank, rankName, bestCards, kickers, score）
+  - 新增 `server/src/main/java/com/pocketholdem/engine/PokerEngine.java`
+    - 纯函数工具类，所有方法均为静态
+    - 实现 `evaluateFiveCards()` - 评估5张牌的牌型
+    - 实现 `evaluateHand()` - 从手牌和公共牌中找出最佳5张牌组合
+    - 实现 `compareHands()` - 比较两个牌型
+    - 实现 `calculateScore()` - 计算牌型综合得分
+  - 新增 `server/src/test/java/com/pocketholdem/engine/PokerEngineTest.java`
+    - 测试引擎能够正确评估高牌
 
 #### 变更
 - 重构 OpenCode AI 助手配置系统

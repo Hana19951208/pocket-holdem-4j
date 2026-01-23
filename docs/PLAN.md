@@ -202,6 +202,7 @@ public record EvaluatedHand(
     List<Card> bestFiveCards // 最佳5张牌
 );
 ```
+- [x] 实现：EvaluatedHand.java
 - 测试: EvaluatedHandTest.java (~2个测试)
 
 ---
@@ -228,9 +229,11 @@ public record EvaluatedHand(
 ##### 3.3 牌型评估 (3 个核心方法)
 - [ ] `evaluateHand()` - 7选5最佳组合（21种组合）
   - 测试: ~3个测试（7张牌输入、最佳5张、组合验证）
-  
-- [ ] `evaluateFiveCards()` - 5张牌牌型识别
+
+- [x] `evaluateFiveCards()` - 5张牌牌型识别（基础框架）
+  - 已实现基础框架：排序、评分、返回 EvaluatedHand
   - 测试: ~11个测试（10种牌型 + 轮盘顺）
+    - [x] 高牌（基础测试通过）
     - [ ] 皇家同花顺
     - [ ] 同花顺
     - [ ] 四条
@@ -241,9 +244,8 @@ public record EvaluatedHand(
     - [ ] 三条
     - [ ] 两对
     - [ ] 一对
-    - [ ] 高牌
-  
-- [ ] `compareHands()` - 两手牌比较
+
+- [x] `compareHands()` - 两手牌比较（基础框架）
   - 测试: ~4个测试（不同牌型、同牌型踢脚、平局、复杂比较）
 
 ##### 3.4 辅助评估方法 (4 个私有方法)
