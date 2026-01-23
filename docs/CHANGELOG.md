@@ -9,6 +9,11 @@
 ### 2026-01-23
 
 #### 新增
+- 实现扑克牌Record Card（TDD 流程）
+  - 新增 `server/src/main/java/com/pocketholdem/model/Card.java`
+  - 新增 `server/src/test/java/com/pocketholdem/model/CardTest.java`
+  - 使用 `@JsonProperty` 指定 snake_case 序列化
+  - 提供便捷方法 `Card.of(String suit, String rank)`
 - 实现点数枚举 Rank（TDD 流程）
   - 新增 `server/src/main/java/com/pocketholdem/model/Rank.java`
   - 新增 `server/src/test/java/com/pocketholdem/model/RankTest.java`

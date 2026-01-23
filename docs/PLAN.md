@@ -179,7 +179,7 @@ public record Card(Suit suit, Rank rank) {
     public String getDisplayName(); // "♥A", "♠10"
 }
 ```
-- 测试: CardTest.java (~3个测试)
+- [x] 测试: CardTest.java (4个测试，包含序列化)
 
 ##### 2.2 Pot - 底池
 ```java
