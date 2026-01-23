@@ -8,6 +8,13 @@
 
 ### 2026-01-23
 
+#### 新增
+- 实现花色枚举 Suit（TDD 流程）
+  - 新增 `server/src/main/java/com/pocketholdem/model/Suit.java`
+  - 新增 `server/src/test/java/com/pocketholdem/model/SuitTest.java`
+  - 使用 `@JsonValue` 输出英文序列化值
+  - 4 种花色：CLUBS, DIAMONDS, HEARTS, SPADES
+
 #### 变更
 - 重构 OpenCode AI 助手配置系统
   - 重命名 `.opencode/AGENT.md` -> `.opencode/AGENTS.md`
