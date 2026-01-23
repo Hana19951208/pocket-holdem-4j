@@ -201,4 +201,100 @@ class PokerEngineTest {
 
         assertEquals(HandRank.FLUSH, result.rank());
     }
+
+    @Test
+    @DisplayName("皇家同花顺应该击败四条")
+    void royalFlushShouldBeatFourOfAKind() {
+        Card[] royalFlush = {
+            Card.of("spades", "ace"),
+            Card.of("spades", "king"),
+            Card.of("spades", "queen"),
+            Card.of("spades", "jack"),
+            Card.of("spades", "ten")
+        };
+
+        Card[] fourOfAKind = {
+            Card.of("spades", "ace"),
+            Card.of("hearts", "ace"),
+            Card.of("diamonds", "ace"),
+            Card.of("clubs", "ace"),
+            Card.of("spades", "king")
+        };
+
+        EvaluatedHand hand1 = PokerEngine.evaluateFiveCards(royalFlush);
+        EvaluatedHand hand2 = PokerEngine.evaluateFiveCards(fourOfAKind);
+
+        int result = PokerEngine.compareHands(hand1, hand2);
+        assertTrue(result > 0, "皇家同花顺应该更强");
+    }
+
+    @Test
+    @DisplayName("相同牌型应该比较踢脚牌")
+    void sameRankShouldCompareKickers() {
+        Card[] hand1 = {
+            Card.of("spades", "ace"),
+            Card.of("hearts", "king"),
+            Card.of("diamonds", "queen"),
+            Card.of("clubs", "jack"),
+            Card.of("spades", "nine")
+        };
+
+        Card[] hand2 = {
+            Card.of("hearts", "ace"),
+            Card.of("diamonds", "king"),
+            Card.of("clubs", "queen"),
+            Card.of("spades", "jack"),
+            Card.of("hearts", "eight")
+        };
+
+        EvaluatedHand result1 = PokerEngine.evaluateFiveCards(hand1);
+        EvaluatedHand result2 = PokerEngine.evaluateFiveCards(hand2);
+
+        int comparison = PokerEngine.compareHands(result1, result2);
+        assertTrue(comparison > 0, "踢脚牌更大的应该赢");
+    }
+
+    @Test
+    @DisplayName("完全相同的牌应该平局")
+    void identicalHandsShouldTie() {
+        Card[] hand = {
+            Card.of("spades", "ace"),
+            Card.of("hearts", "king"),
+            Card.of("diamonds", "queen"),
+            Card.of("clubs", "jack"),
+            Card.of("spades", "ten")
+        };
+
+        EvaluatedHand result1 = PokerEngine.evaluateFiveCards(hand);
+        EvaluatedHand result2 = PokerEngine.evaluateFiveCards(hand);
+
+        int comparison = PokerEngine.compareHands(result1, result2);
+        assertEquals(0, comparison, "相同的牌应该平局");
+    }
+
+    @Test
+    @DisplayName("四条应该击败三条")
+    void fourOfAKindShouldBeatThreeOfAKind() {
+        Card[] four = {
+            Card.of("spades", "ace"),
+            Card.of("hearts", "ace"),
+            Card.of("diamonds", "ace"),
+            Card.of("clubs", "ace"),
+            Card.of("spades", "king")
+        };
+
+        Card[] three = {
+            Card.of("spades", "king"),
+            Card.of("hearts", "king"),
+            Card.of("diamonds", "king"),
+            Card.of("clubs", "ace"),
+            Card.of("spades", "queen")
+        };
+
+        EvaluatedHand hand1 = PokerEngine.evaluateFiveCards(four);
+        EvaluatedHand hand2 = PokerEngine.evaluateFiveCards(three);
+
+        int comparison = PokerEngine.compareHands(hand1, hand2);
+        assertTrue(comparison > 0);
+    }
 }
