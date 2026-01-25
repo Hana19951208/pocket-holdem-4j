@@ -184,6 +184,34 @@ description: 基于 Antigravity 规范的全面代码审查流程 - 安全性、
 - **性能**: 数据库查询优化、缓存使用
 - **异常**: 业务异常 vs 系统异常区分
 
+#### Pocket Holdem 4j 项目特定测试要求
+
+**覆盖率目标**:
+- 核心逻辑 (PokerEngine): **>80%**
+- 控制器层: **>60%**
+- 总体: **>70%**
+
+**测试结构规范**:
+```java
+@Test
+@DisplayName("皇家同花顺应该击败四条")  // 中文测试名称
+void royalFlushShouldBeatFourOfAKind() {
+    // Given - 准备测试数据
+    List<Card> royalFlush = createRoyalFlush();
+    List<Card> fourOfAKind = createFourOfAKind();
+
+    // When - 执行被测方法
+    int result = PokerEngine.compareHands(royalFlush, fourOfAKind);
+
+    // Then - 验证结果
+    assertThat(result).isGreaterThan(0);
+}
+```
+
+**测试用例参考**:
+- 测试用例应参考原项目 `pocket-holdem-mvp/server/src/poker.test.ts`
+- 确保相同的输入能得到相同的输出结果
+
 ### Python 专项
 - **类型提示**: 完整的类型定义
 - **日志**: logging 模块使用

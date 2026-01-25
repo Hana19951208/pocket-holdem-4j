@@ -6,6 +6,19 @@
 
 ---
 
+## 📚 Skill 引用 (按需加载)
+
+以下内容由专门的 skill 提供，按需自动加载：
+
+| 技能名称 | 描述 | 加载时机 |
+|----------|------|----------|
+| `antigravity-code-style` | 代码风格规范（命名、注释、并发、导入顺序） | 编写/审查 Java 代码时 |
+| `antigravity-java-expert` | Java 专家模式（Spring Boot、WebSocket/STOMP） | 实现后端功能时 |
+| `antigravity-code-reviewer` | 代码审查（测试覆盖率、安全性、性能） | 代码审查时 |
+| `antigravity-prd-writer` | PRD 编写规范 | 编写需求文档时 |
+
+---
+
 ## 🚀 快速命令
 
 ### 环境配置
@@ -102,7 +115,7 @@ pocket-holdem-4j/
 │   └── CHANGELOG.md             # 变更日志
 │
 ├── .opencode/                   # AI 助手配置
-│   └── AGENT.md                 # 旧版规则（参见本文件）
+│   └── AGENT.md                 # 本文件
 └── README.md
 ```
 
@@ -123,90 +136,15 @@ pocket-holdem-4j/
 
 ---
 
-## 📝 代码风格规范
+## 🌏 语言规范 (最高优先级)
 
-### 语言与注释
-
-```java
-// ✅ 正确：使用中文注释
-/**
- * 计算边池
- * 当多个玩家 All-In 且筹码不一致时，需要拆分为多层底池
- * 
- * @param players 参与手牌的玩家列表
- * @return 底池列表（主池 + 边池）
- */
-public List<Pot> calculateSidePots(List<Player> players) { }
-
-// ❌ 错误：使用英文注释
-// Calculate side pots when multiple players all-in
-```
-
-### 命名规范
-
-| 元素 | 规范 | 示例 |
-|------|------|------|
-| 类名 | 大驼峰 | `PokerEngine`, `GameController` |
-| 接口 | 大驼峰 | `GameState`, `PlayerAction` |
-| 方法 | 小驼峰 | `calculateSidePots()`, `dealHoleCards()` |
-| 变量 | 小驼峰 | `currentBet`, `playerIndex` |
-| 常量 | 大写下划线 | `MAX_PLAYERS`, `DEFAULT_TIMEOUT` |
-| 枚举 | 大驼峰 + 大写值 | `enum Suit { HEARTS, DIAMONDS }` |
-| 包名 | 全小写 | `com.pocketholdem.engine` |
-
-### Java 代码模式
-
-```java
-// ✅ 使用 Record 定义不可变数据
-public record Card(Suit suit, Rank rank) {}
-
-// ✅ 使用 Lombok 减少样板代码
-@Data
-@Slf4j
-@Builder
-public class Player {
-    private String id;
-    private String nickname;
-    private int chips;
-}
-
-// ✅ 使用 Optional 处理可空返回
-public Optional<Player> findPlayerById(String id) { }
-
-// ❌ 禁止：集合类型返回 null，应返回空集合
-public List<Card> getCommunityCards() {
-    return communityCards != null ? communityCards : Collections.emptyList();
-}
-```
-
-### 并发安全
-
-```java
-// ✅ 房间级别锁保护线程安全
-public class Room {
-    private final ReentrantLock lock = new ReentrantLock();
-    
-    public void processAction(Player player, Action action) {
-        lock.lock();
-        try {
-            // 处理玩家操作
-        } finally {
-            lock.unlock();
-        }
-    }
-}
-
-// ✅ 使用 ConcurrentHashMap 管理共享状态
-private final Map<String, Room> rooms = new ConcurrentHashMap<>();
-```
-
-### 导入顺序
-
-1. `java.*` (标准库)
-2. `javax.*`
-3. `org.springframework.*`
-4. 第三方库
-5. `com.pocketholdem.*` (项目包)
+| 规则 | 说明 |
+|------|------|
+| **所有回复** | 必须使用 **中文** |
+| **文档编写** | 必须使用 **中文** |
+| **代码注释** | 必须使用 **中文** |
+| **Git Commit 信息** | 必须使用 **中文** |
+| **变量/方法命名** | 英文 (符合 Java 规范) |
 
 ---
 
@@ -227,100 +165,23 @@ private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 
 ---
 
-## 🧪 测试要求
+## 📝 文档更新规范
 
-### 覆盖率目标
-- 核心逻辑 (PokerEngine): **>80%**
-- 控制器层: **>60%**
-- 总体: **>70%**
+每次修改代码后，**必须**调用 `commit-manager` subagent 进行提交：
+- 自动分析代码变更并生成符合 Conventional Commits 标准的提交信息
+- 完成功能后可选择里程碑发布模式，自动更新 CHANGELOG.md
+- 无需等待用户明确提示，在文件更新完成后即可自主执行提交流程
+- 提交信息需使用中文，清晰描述变更内容
 
-### 测试结构
-
-```java
-@Test
-@DisplayName("皇家同花顺应该击败四条")  // 中文测试名称
-void royalFlushShouldBeatFourOfAKind() {
-    // Given - 准备测试数据
-    List<Card> royalFlush = createRoyalFlush();
-    List<Card> fourOfAKind = createFourOfAKind();
-    
-    // When - 执行被测方法
-    int result = PokerEngine.compareHands(royalFlush, fourOfAKind);
-    
-    // Then - 验证结果
-    assertThat(result).isGreaterThan(0);
-}
-```
-
----
-
-## 📋 文档更新要求
-
-每次修改代码后，**必须**：
-
-1. **更新 `docs/CHANGELOG.md`** - 按照`commit-manager`的规范来更新。并按照时间(精确到分钟)倒序记录
-2. **检查 `README.md`** - 新功能或结构变化需同步更新
-3. **更新 `docs/PLAN.md`** - 完成的任务标记 `[x]`
-4. **自主提交代码** - 完成上述文档更新后，自动调用 `commit-manager` subagent 进行代码提交
-   - 使用 `commit-manager` 自动分析变更并生成符合 Conventional Commits 标准的提交信息
-   - 无需等待用户明确提示，在文件更新完成后即可自主执行提交流程
-   - 提交信息需使用中文，清晰描述变更内容
-
----
-
-## 🔌 WebSocket/STOMP 协议
-
-### 端点模式
-
-| 类型 | 路径 | 用途 |
-|------|------|------|
-| 订阅（广播） | `/topic/room/{roomId}` | 房间状态更新 |
-| 订阅（私信） | `/user/queue/private` | 手牌等私密信息 |
-| 发送（操作） | `/app/action` | 玩家操作 |
-| 发送（加入） | `/app/join` | 加入房间 |
-
-### 主要消息类型
-
-- 客户端 → 服务端: `CREATE_ROOM`, `JOIN_ROOM`, `SIT_DOWN`, `PLAYER_ACTION`, `RECONNECT`
-- 服务端 → 客户端: `ROOM_CREATED`, `SYNC_STATE`, `DEAL_CARDS`, `PLAYER_TURN`, `HAND_RESULT`
-
-完整协议详见 `docs/websocket-protocol.md`。
-
----
-
-## ⚠️ 关键约束
-
-### 必须做
-
-- [x] 所有代码注释使用 **中文**
-- [x] 所有 Git 提交信息使用 **中文**
-- [x] 实现前先参考原 TypeScript 代码
-
-### 禁止做
-
-- [ ] 使用英文注释
-- [ ] 不看原 TypeScript 就实现功能
-- [ ] 跳过核心逻辑的测试
-- [ ] 集合类型返回 `null`（应返回空集合）
-- [ ] 吞掉异常不记录日志
-
----
-
-## 🎯 架构原则
-
-| 原则 | 说明 |
-|------|------|
-| **服务端权威** | 所有游戏逻辑仅在服务端执行 |
-| **客户端只渲染** | 前端不参与游戏状态计算 |
-| **房间级串行** | 同一房间内操作严格串行处理 |
-| **状态版本化** | 每次状态变更递增 `stateVersion` |
-| **操作幂等** | `requestId` + `roundIndex` 防止重复处理 |
+**commit-manager 路径**：`/Users/Hana/.config/opencode/agents/commit-manager.md`
 
 ---
 
 ## 🔄 工作流程总结
 
 1. **编码前**: 阅读原项目对应的 TypeScript 实现
-2. **编码中**: 中文注释，遵循上述规范
+2. **编码中**: 中文注释，遵循代码风格规范（加载 `antigravity-code-style`）
 3. **编码后**:
+   - 运行测试（如需审查则加载 `antigravity-code-reviewer`）
+   - 调用 `commit-manager` 提交代码
    - 在 `docs/PLAN.md` 标记完成的任务

@@ -4,231 +4,45 @@
 
 ---
 
+## [0.1.0] - 2026-01-25
+
+### 阶段二：AI 助手配置优化 ✅
+
+- **2026-01-25 14:06**：refactor(docs) 重构 AGENTS.md，实现渐进式技能加载
+
+**技术亮点**：
+- AGENTS.md 从 421 行精简到 188 行（-55%）
+- 首次加载上下文从 ~14K 减少到 ~6K（-57%）
+- 通用规范提取到可复用 skill，按需加载
+- 新增 3 个项目特定规范章节：
+  - Java 代码模式（antigravity-code-style）
+  - WebSocket/STOMP 协议规范（antigravity-java-expert）
+  - 项目测试要求（antigravity-code-reviewer）
+
+---
+
+### 阶段一：核心引擎开发 ✅
+
+- **2026-01-23 16:33**：feat(engine) 完成阶段1核心引擎开发（TDD流程）
+- **2026-01-23 16:19**：feat(engine) 实现底池分配逻辑
+- **2026-01-23 15:17**：feat(engine) 实现边池计算核心算法
+
+**技术亮点**：
+- 测试覆盖率：93%（PokerEngine 行覆盖率 93%，分支覆盖率 84%）
+- 测试用例：78 个（全部通过）
+- 严格遵循 TDD 流程
+- 所有筹码计算使用 ChipCalculator 安全运算
+
+---
+
 ## [未发布]
 
- ### 2026-01-23
+### 阶段三：核心功能开发 🚧
 
- #### 新增
- - 完成阶段1：核心引擎开发（TDD流程，子冲刺A/B/C）
-   - 子冲刺A：基础数据结构实现
-     - Suit 枚举（花色）
-     - Rank 枚举（点数）
-     - Card Record（扑克牌）
-     - HandRank 枚举（牌型等级）
-     - ChipCalculator 工具类（溢出检查）
-   - 子冲刺B：牌型评估逻辑实现
-     - PokerEngine 框架和基础方法
-     - 顺子检测（包括轮盘顺A-2-3-4-5）
-     - 牌型分组（四条、三条、对子、葫芦）
-     - 从7张牌中找出最佳5张组合
-     - 完整的比牌逻辑（支持踢脚牌比较）
-   - 子冲刺C：底池与边池算法实现
-     - Pot Record（底池数据结构）
-     - 边池计算核心算法（calculateSidePots）
-     - 底池分配逻辑（支持平分和余数处理）
- - 添加 JaCoCo 覆盖率插件到 pom.xml
- - 总测试用例：48 个（全部通过）
- - 覆盖率：87%（超过 >85% 目标）
- 
- #### 测试结果
- ```
- Tests run: 48, Failures: 0, Errors: 0, Skipped: 0
- BUILD SUCCESS
- ```
-
- - 补充 PokerEngine 边界测试用例（TDD流程）
-   - 新增 P0 优先级测试用例：29 个
-     - 皇家同花顺边界测试（5个）：四种花色、非连续误判、点数不连续
-     - 边界条件测试（8个）：空数组、null数组、单张牌、4张牌、6张牌、手牌null、公共牌null、总牌数不足
-     - 组合算法边界测试（4个）：7张同花色选最佳5张、四条加最大踢脚、三条加最大踢脚、两对加最大踢脚、一对加最大踢脚
-     - 同花顺边界测试（3个）：杂色同花顺、同花非连续、轮盘顺同花顺
-   - 新增 P1 优先级测试用例：5 个
-     - 四条牌边界测试（4个）：四条A加K、四条K加A、四条2加3、所有相同点数
-     - 三条牌边界测试（3个）：三条A加KQ、三条2加34、不同花色三条
- - 总测试用例：78 个（全部通过）
- - 覆盖率：93%（PokerEngine 类行覆盖率 93%，分支覆盖率 84%）
- 
- #### 测试结果
- ```
- Tests run: 78, Failures: 0, Errors: 0, Skipped: 0
- BUILD SUCCESS
- ```
-
-#### 问题验证与确认
-- **验证用户报告的4个"高严重性逻辑缺陷"**，经过详细调查确认所有报告的问题均不存在
-  - **Issue 1: 皇家同花顺判定逻辑错误** ❌ 不存在
-    - 报告问题：只检查两张牌（A和K），没有验证5张牌连续性
-    - 实际情况：连续性验证已在 `detectStraight()` 方法（第136-165行）中完成
-    - 判定逻辑：`if (isFlush && straight != null)` - `straight` 已通过完整的连续性检查
-  - **Issue 2: 三条牌型判定逻辑错误** ❌ 不存在
-    - 报告问题：使用 `groupingBy(rank)` 没有验证三张牌是否不同
-    - 实际情况：代码不使用 `groupingBy`，而是自定义 `groupCards()` 方法（第173-209行）
-    - 判定逻辑：使用 `HashMap<Rank, List<Card>>` 分组，`groups.three()` 返回同一rank的3张牌
-    - 物理保证：一副牌不可能有重复的card对象，花色自动不同
-  - **Issue 3: 同花类型同花顺判定逻辑错误** ❌ 不存在
-    - 报告问题：第81-84行的同花判定没有验证连续性
-    - 实际情况：第81-84行是**普通同花**判定，不是同花顺
-    - 真正的同花顺判定在第56-63行：`if (isFlush && straight != null)` - 结合了同花和顺子检测
-  - **Issue 4: A-2-3-4-5同花顺判定逻辑错误** ❌ 不存在
-    - 报告问题：没有验证是否是严格顺子序列
-    - 实际情况：第149-162行已严格验证 `[ACE, FIVE, FOUR, THREE, TWO]` 模式
-    - 遍历所有5张牌的rank，严格匹配序列
-
-#### 验证方法
-- 启动6个并行探索任务（explore + librarian agents）
-- 对比原TypeScript实现 `/Users/Hana/Codes/pocket-holdem-mvp`
-- 分析测试用例覆盖情况（16个测试用例，100%通过）
-- 逐行审查牌型判定逻辑（顺子、同花、三条、皇家同花顺、A-2-3-4-5）
-- 运行完整测试套件验证功能正确性
-
-#### 结论
-- **代码实现正确**：所有牌型判定逻辑符合德州扑克标准
-- **算法一致**：Java版本与原TypeScript版本逻辑完全一致
-- **测试覆盖全面**：10种牌型100%覆盖，边界测试充分
-- **无需修改**：保持现有代码不变
-
-#### 技术亮点
-- 严格遵循 TDD 流程（测试先行）
-- 所有筹码计算使用 ChipCalculator 且包含溢出检查
-- 所有 Record 类使用 @JsonProperty 指定 snake_case
-- 所有枚举使用 @JsonValue 输出英文值
-- 代码注释全部使用简体中文
-- score 使用 long 类型防止整数溢出
-- 实现底池分配逻辑（支持平分和余数处理）（TDD 流程）
-  - 更新 `PotCalculator.java`
-    - 新增 `awardPots()` 方法 - 分配底池给获胜玩家
-    - 新增 `findWinners()` 私有方法 - 找出某个底池的最高分玩家
-    - 新增 `distributePot()` 私有方法 - 分配底池给获胜者
-    - 所有筹码计算使用 `ChipCalculator` 安全运算
-    - 支持多个获胜者平分底池
-    - 支持余数按座位顺序分配（第一个玩家多拿余数）
-    - 支持边池分配给有资格的玩家
-  - 新增 4 个测试用例：
-    - `shouldAwardPotToSingleWinner()` - 单个获胜者获得全部底池
-    - `shouldSplitPotAmongMultipleWinners()` - 多个获胜者平分底池
-    - `shouldDistributeRemainderBySeatOrder()` - 余数按座位顺序分配
-    - `shouldAwardSidePotToEligiblePlayers()` - 边池分配给有资格的玩家
-- 实现底池数据结构 Pot（TDD 流程）
-  - 新增 `server/src/main/java/com/pocketholdem/model/Pot.java`
-  - 新增 `server/src/test/java/com/pocketholdem/model/PotTest.java`
-  - 使用 Record 定义不可变底池数据
-  - 使用 `@JsonProperty` 指定 snake_case 序列化
-  - 测试覆盖：底池创建、JSON 序列化
-- 实现从7张牌中找出最佳5张组合（TDD 流程）
-  - 更新 `PokerEngine.evaluateHand()` 方法
-    - 合并手牌和公共牌（共7张）
-    - 使用递归算法生成所有 C(7,5)=21 种组合
-    - 评估每个组合，选择得分最高的最佳5张
-  - 新增 `getCombinations()` 私有方法 - 生成从n张牌选k张的组合
-  - 新增 `combine()` 私有方法 - 递归回溯生成组合的核心逻辑
-  - 修复 `calculateScore()` 整数溢出问题
-    - 将返回值和中间变量从 `int` 改为 `long`
-    - ROYAL_FLUSH 分数超过 Integer.MAX_VALUE，导致溢出为负数
-  - 更新 `EvaluatedHand` Record 的 score 字段类型为 `long`
-  - 更新 `compareHands()` 使用 `Long.compare()`
-  - 新增 2 个7张牌测试用例：
-    - `shouldFindBestHandFromSevenCards()` - 从7张牌中找出皇家同花顺
-    - `shouldSelectFlushFromSevenCards()` - 从7张牌中选出同花
-- 实现筹码计算工具类 ChipCalculator（TDD 流程）
-  - 新增 `server/src/main/java/com/pocketholdem/util/ChipCalculator.java`
-  - 新增 `server/src/test/java/com/pocketholdem/util/ChipCalculatorTest.java`
-  - 支持安全加法、减法、乘法、除法运算，包含溢出检查
-  - 提供筹码增减合法性验证方法 `validateIncrement()` 和 `validateDecrement()`
-- 实现扑克牌Record Card（TDD 流程）
-  - 新增 `server/src/main/java/com/pocketholdem/model/Card.java`
-  - 新增 `server/src/test/java/com/pocketholdem/model/CardTest.java`
-  - 使用 `@JsonProperty` 指定 snake_case 序列化
-  - 提供便捷方法 `Card.of(String suit, String rank)`
-- 实现点数枚举 Rank（TDD 流程）
-  - 新增 `server/src/main/java/com/pocketholdem/model/Rank.java`
-  - 新增 `server/src/test/java/com/pocketholdem/model/RankTest.java`
-  - 使用 `@JsonValue` 输出英文序列化值
-  - 13 个点数：TWO(2) ~ ACE(14)，其中 J=11, Q=12, K=13, A=14
-- 实现花色枚举 Suit（TDD 流程）
-  - 新增 `server/src/main/java/com/pocketholdem/model/Suit.java`
-  - 新增 `server/src/test/java/com/pocketholdem/model/SuitTest.java`
-  - 使用 `@JsonValue` 输出英文序列化值
-  - 4 种花色：CLUBS, DIAMONDS, HEARTS, SPADES
-- 实现牌型等级枚举 HandRank（TDD 流程）
-  - 新增 `server/src/main/java/com/pocketholdem/model/HandRank.java`
-  - 新增 `server/src/test/java/com/pocketholdem/model/HandRankTest.java`
-  - 使用 `@JsonValue` 输出 snake_case 序列化值
-  - 10 种牌型：HIGH_CARD(1) ~ ROYAL_FLUSH(10)
-- 实现 PokerEngine 框架和基础方法（TDD 流程）
-  - 新增 `server/src/main/java/com/pocketholdem/model/EvaluatedHand.java`
-    - 牌型评估结果 Record（包含 rank, rankName, bestCards, kickers, score）
-  - 新增 `server/src/main/java/com/pocketholdem/engine/PokerEngine.java`
-    - 纯函数工具类，所有方法均为静态
-    - 实现 `evaluateFiveCards()` - 评估5张牌的牌型
-    - 实现 `evaluateHand()` - 从手牌和公共牌中找出最佳5张牌组合
-    - 实现 `compareHands()` - 比较两个牌型
-    - 实现 `calculateScore()` - 计算牌型综合得分
-   - 新增 `server/src/test/java/com/pocketholdem/engine/PokerEngineTest.java`
-     - 测试引擎能够正确评估高牌
-- 实现顺子检测功能（TDD 流程）
-  - 新增 `detectStraight()` 私有方法
-    - 支持常规顺子检测（5张连续点数）
-    - 支持轮盘顺（A-2-3-4-5）特殊处理
-    - 返回排序后的牌数组，非顺子返回 null
-  - 新增 `createEvaluatedHand()` 私有辅助方法
-  - 更新 `evaluateFiveCards()` 方法
-    - 添加顺子检测逻辑
-    - 添加同花检测逻辑
-    - 支持同花顺、皇家同花顺识别
-  - 修正 `shouldEvaluateHighCard()` 测试数据（原测试数据 A-K-Q-J-10 实际是顺子）
-  - 新增 4 个顺子相关测试：
-    - `shouldRecognizeNormalStraight()` - 常规顺子 3-4-5-6-7
-    - `shouldRecognizeWheelStraight()` - 轮盘顺 A-2-3-4-5
-    - `shouldNotRecognizeNonStraight()` - 非顺子（缺一张）
-    - `shouldRecognizeStraightFlush()` - 同花顺 2-3-4-5-6
-
-   #### 变更
-- 补充阶段二实施计划（docs/PLAN.md）
-  - 新增 5 个关键遗漏点的实施任务
-  - Room GC 清理机制（P0 整改任务）
-  - Host Migration 房主转移（P1 整改任务）
-  - Timer Retry 指数退避重试（P1 整改任务）
-  - Rebuy System 筹码补充与复活（P1 整改任务）
-  - Logic/IO Separation 逻辑与IO分离（P2 整改任务）
-  - 关联 phase2-supplement.md 详细设计方案
-- 重构 OpenCode AI 助手配置系统
-  - 重命名 `.opencode/AGENT.md` -> `.opencode/AGENTS.md`
-  - 新增项目级 `AGENTS.md`（328 行，包含完整开发规范）
-  - 新增 `.opencode/skills/` 目录，包含 6 个专业技能包：
-    - antigravity-code-reviewer（代码审查专家）
-    - antigravity-code-style（代码风格专家）
-    - antigravity-frontend-mentor（前端导师）
-    - antigravity-java-expert（Java 专家）
-    - antigravity-prd-writer（PRD 撰写专家）
-    - antigravity-python-ai（Python AI 开发专家）
-- 完善项目实施计划（docs/PLAN.md）
-  - 整合架构师视角的核心考量点（架构对齐与差异处理、数据一致性与类型安全）
-  - 新增阶段0：架构设计文档补充（2天）
-  - 新增阶段四：测试与优化专项（2天）
-  - 调整总工期至15-18天，新增255个测试方法，覆盖率达>80%
-- 新增架构整改建议文档（.sisyphus/architecture-review-recommendations.md）
-  - 对照原TS项目，识别10项核心改进建议
-  - 定义P0/P1/P2风险项分级（3/3/2项）
-  - 提供完整的6阶段实施方案
-- 新增阶段0详细计划（.sisyphus/plans/phase0-architecture-design.md）
-  - 包含5份架构设计文档：并发模型、DTO体系、数值计算、STOMP适配、测试策略
-
-### 2024-01-20
-
-#### 新增
-- 初始化项目结构
-- 创建 Spring Boot 3 + Java 17 工程骨架
-- 创建项目文档体系
-  - `README.md` - 项目说明
-  - `docs/PRD.md` - 产品需求文档 (从原项目复制并整理)
-  - `docs/PLAN.md` - 实施计划
-  - `docs/CHANGELOG.md` - 变更日志
-  - `.opencode/AGENT.md` - AI 助手规则
-
-#### 确立
-- 技术栈选型：Java 17 + Spring Boot 3 + STOMP + UniApp
-- 项目规范：所有文档、注释、回复使用中文
-- 原项目参考路径：`/Users/Hana/Codes/pocket-holdem-mvp`
+**进行中的任务**：
+- 实现房间管理服务（RoomManager）
+- 实现游戏控制器（GameController）
+- 实现 WebSocket/STOMP 消息处理
 
 ---
 

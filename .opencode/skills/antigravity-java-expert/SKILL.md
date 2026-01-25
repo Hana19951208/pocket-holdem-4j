@@ -571,6 +571,78 @@ public ApiResponse<UserDTO> createUser(@Valid @RequestBody CreateUserRequest req
 }
 ```
 
+## WebSocket/STOMP 协议规范
+
+### 使用场景
+- 实现基于 WebSocket 的实时通信功能
+- 处理 STOMP 消息协议
+- 管理房间订阅和消息广播
+
+### 端点模式
+
+| 类型 | 路径 | 用途 |
+|------|------|------|
+| 订阅（广播） | `/topic/room/{roomId}` | 房间状态更新 |
+| 订阅（私信） | `/user/queue/private` | 手牌等私密信息 |
+| 发送（操作） | `/app/action` | 玩家操作 |
+| 发送（加入） | `/app/join` | 加入房间 |
+
+### 主要消息类型
+
+- **客户端 → 服务端**: `CREATE_ROOM`, `JOIN_ROOM`, `SIT_DOWN`, `PLAYER_ACTION`, `RECONNECT`
+- **服务端 → 客户端**: `ROOM_CREATED`, `SYNC_STATE`, `DEAL_CARDS`, `PLAYER_TURN`, `HAND_RESULT`
+
+### Spring Boot 配置示例
+
+```java
+@Configuration
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws-poker")
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
+    }
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        // 启用简单消息代理，用于订阅
+        registry.enableSimpleBroker("/topic", "/queue");
+        // 设置应用目标前缀，用于发送
+        registry.setApplicationDestinationPrefixes("/app");
+    }
+}
+```
+
+### 消息处理器示例
+
+```java
+@Controller
+public class GameController {
+
+    @MessageMapping("/action")
+    @SendTo("/topic/room/{roomId}")
+    public GameState handlePlayerAction(
+            @DestinationVariable String roomId,
+            PlayerAction action,
+            Principal principal) {
+        // 处理玩家操作并返回新状态
+        return gameService.processAction(roomId, principal.getName(), action);
+    }
+}
+```
+
+### 最佳实践
+
+1. **消息幂等性**: 使用 `requestId` + `roundIndex` 防止重复处理
+2. **状态版本化**: 每次状态变更递增 `stateVersion`
+3. **房间级串行**: 同一房间内操作严格串行处理
+4. **错误处理**: 统一的异常处理，避免连接断开
+
+---
+
 ## 常见问题与解决方案
 
 ### Q1: @Autowired vs @Resource 区别？

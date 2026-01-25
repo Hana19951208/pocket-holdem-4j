@@ -29,6 +29,59 @@ description: Antigravity 首席辅助的代码风格规范 - 涵盖 Java、Pytho
 - **泛型**: 单字母大写 (e.g., `T`, `K`, `V`) 或描述性名称 (e.g., `UserDTO`)
 - **异常类**: 以 `Exception` 结尾 (e.g., `BusinessException`)
 
+### Java 项目特定规范 (Pocket Holdem 4j)
+
+#### Java 代码模式
+```java
+// ✅ 使用 Record 定义不可变数据
+public record Card(Suit suit, Rank rank) {}
+
+// ✅ 使用 Lombok 减少样板代码
+@Data
+@Slf4j
+@Builder
+public class Player {
+    private String id;
+    private String nickname;
+    private int chips;
+}
+
+// ✅ 使用 Optional 处理可空返回
+public Optional<Player> findPlayerById(String id) { }
+
+// ❌ 禁止：集合类型返回 null，应返回空集合
+public List<Card> getCommunityCards() {
+    return communityCards != null ? communityCards : Collections.emptyList();
+}
+```
+
+#### 并发安全
+```java
+// ✅ 房间级别锁保护线程安全
+public class Room {
+    private final ReentrantLock lock = new ReentrantLock();
+    
+    public void processAction(Player player, Action action) {
+        lock.lock();
+        try {
+            // 处理玩家操作
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+
+// ✅ 使用 ConcurrentHashMap 管理共享状态
+private final Map<String, Room> rooms = new ConcurrentHashMap<>();
+```
+
+#### 导入顺序
+1. `java.*` (标准库)
+2. `javax.*`
+3. `org.springframework.*`
+4. 第三方库
+5. `com.pocketholdem.*` (项目包)
+
 ### Python 特有
 - **私有方法/属性**: 单下划线前缀 (e.g., `_calculate_metrics`)
 - **Magic 方法**: 双下划线开头和结尾 (e.g., `__init__`, `__str__`)
