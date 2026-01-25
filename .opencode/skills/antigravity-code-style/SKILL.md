@@ -1,12 +1,12 @@
 ---
 name: antigravity-code-style
-description: Antigravity 首席辅助的代码风格规范 - 涵盖 Java、Python、前端的命名规范、注释规则、核心偏好
+description: Antigravity 首席辅助的代码风格规范 - 涵盖 Java、前端的命名规范、注释规则、核心偏好
 ---
 
 # Antigravity 代码风格规范
 
 ## 使用场景
-- 编写任何代码时（Java、Python、JavaScript/TypeScript）
+- 编写任何代码时（Java、JavaScript/TypeScript）
 - 代码审查时检查代码风格
 - 重构或优化代码时遵循统一标准
 - 新项目初始化时建立代码规范
@@ -15,19 +15,192 @@ description: Antigravity 首席辅助的代码风格规范 - 涵盖 Java、Pytho
 - 核心逻辑优先使用 **中文注释**
 - 确保代码通俗易懂，便于团队协作
 
-## 命名规范
+### Java 工具库使用规范 (Hutool)
 
-### 通用规则
-- **变量/函数**: camelCase (e.g., `getUserData`, `isLoading`)
-- **类/组件/接口**: PascalCase (e.g., `UserProfile`, `IDataService`)
-- **常量**: UPPER_SNAKE_CASE (e.g., `MAX_RETRY_COUNT`, `DEFAULT_TIMEOUT`)
-- **私有成员**: 以下划线前缀标识 (e.g., `_internalCache`, `_validateInput`)
-- **布尔值**: 以 `is`, `has`, `can` 开头 (e.g., `isValid`, `hasPermission`)
+#### 使用原则
+- **优先使用 Hutool**: 项目中优先使用 Hutool 工具包处理通用操作
+- **避免重复造轮子**: Hutool 已提供成熟稳定的工具方法
+- **保持一致性**: 统一使用 Hutool 提升代码可读性和可维护性
 
-### Java 特有
-- **包名**: 全小写，单词间不使用分隔符 (e.g., `com.antigravity.service`)
-- **泛型**: 单字母大写 (e.g., `T`, `K`, `V`) 或描述性名称 (e.g., `UserDTO`)
-- **异常类**: 以 `Exception` 结尾 (e.g., `BusinessException`)
+#### Hutool 依赖配置
+```xml
+<!-- pom.xml -->
+<dependency>
+    <groupId>cn.hutool</groupId>
+    <artifactId>hutool-all</artifactId>
+    <version>5.8.28</version>
+</dependency>
+```
+
+#### 常用工具类
+
+##### 1. 集合工具 (CollUtil)
+```java
+import cn.hutool.core.collection.CollUtil;
+
+// ✅ 正确：使用 CollUtil 初始化集合
+List<String> players = CollUtil.newArrayList("player1", "player2");
+Map<String, Integer> scores = CollUtil.newHashMap();
+
+// ✅ 正确：使用 CollUtil 判空
+if (CollUtil.isEmpty(list)) {
+    return Collections.emptyList();
+}
+
+// ✅ 正确：使用 CollUtil 转换
+List<Integer> ints = CollUtil.convert(Arrays.asList("1", "2", "3"), Integer::parseInt);
+
+// ❌ 错误：手动初始化
+List<String> players = new ArrayList<>();
+players.add("player1");
+```
+
+##### 2. 字符串工具 (StrUtil)
+```java
+import cn.hutool.core.util.StrUtil;
+
+// ✅ 正确：使用 StrUtil 判空
+if (StrUtil.isBlank(username)) {
+    throw new IllegalArgumentException("用户名不能为空");
+}
+
+// ✅ 正确：使用 StrUtil 格式化
+String message = StrUtil.format("玩家 {} 加入了房间", playerId);
+
+// ✅ 正确：使用 StrUtil 截取
+String shortName = StrUtil.sub(nickname, 0, 10);
+
+// ❌ 错误：手动判空
+if (username == null || username.trim().isEmpty()) {
+    throw new IllegalArgumentException("用户名不能为空");
+}
+```
+
+##### 3. 对象工具 (ObjectUtil)
+```java
+import cn.hutool.core.util.ObjectUtil;
+
+// ✅ 正确：使用 ObjectUtil 判空
+if (ObjectUtil.isNull(user)) {
+    return Optional.empty();
+}
+
+// ✅ 正确：使用 ObjectUtil 比较
+if (ObjectUtil.equal(card1, card2)) {
+    return true;
+}
+
+// ✅ 正确：使用 ObjectUtil 默认值
+String nickname = ObjectUtil.defaultIfNull(user.getNickname(), "匿名");
+```
+
+##### 4. 数字工具 (NumberUtil)
+```java
+import cn.hutool.core.util.NumberUtil;
+
+// ✅ 正确：使用 NumberUtil 运算（注意：本项目筹码计算仍需使用 ChipCalculator）
+double result = NumberUtil.add(a, b);
+boolean isGreater = NumberUtil.isGreater(a, b);
+
+// ✅ 正确：使用 NumberUtil 格式化
+String formatted = NumberUtil.formatDecimal(amount);
+
+// ⚠️ 注意：筹码计算仍需使用 ChipCalculator（包含溢出检查）
+// 不能使用 NumberUtil 替代 ChipCalculator 的安全运算
+```
+
+##### 5. Map 工具 (MapUtil)
+```java
+import cn.hutool.core.map.MapUtil;
+
+// ✅ 正确：使用 MapUtil 初始化
+Map<String, Integer> map = MapUtil.<String, Integer>builder()
+    .put("key1", 1)
+    .put("key2", 2)
+    .build();
+
+// ✅ 正确：使用 MapUtil 判空
+if (MapUtil.isEmpty(map)) {
+    return Collections.emptyMap();
+}
+
+// ✅ 正确：使用 MapUtil 获取值（带默认值）
+Integer value = MapUtil.get(map, "key", 0);
+```
+
+##### 6. 数组工具 (ArrayUtil)
+```java
+import cn.hutool.core.util.ArrayUtil;
+
+// ✅ 正确：使用 ArrayUtil 判空
+if (ArrayUtil.isEmpty(array)) {
+    return new String[0];
+}
+
+// ✅ 正确：使用 ArrayUtil 复制
+String[] copy = ArrayUtil.copy(array);
+
+// ✅ 正确：使用 ArrayUtil 拼接
+String[] result = ArrayUtil.addAll(array1, array2);
+```
+
+##### 7. JSON 工具 (JSONUtil)
+```java
+import cn.hutool.json.JSONUtil;
+
+// ✅ 正确：使用 JSONUtil 序列化
+String json = JSONUtil.toJsonStr(object);
+
+// ✅ 正确：使用 JSONUtil 反序列化
+User user = JSONUtil.toBean(jsonStr, User.class);
+
+// ✅ 正确：使用 JSONUtil 转换为 JSON 对象
+JSONObject json = JSONUtil.parseObj(jsonStr);
+```
+
+##### 8. ID 生成器 (IdUtil)
+```java
+import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.IdUtil;
+
+// ✅ 正确：使用 UUID 生成唯一 ID
+String roomId = UUID.randomUUID().toString();
+
+// ✅ 正确：使用雪花算法生成 ID（分布式唯一）
+long id = IdUtil.getSnowflakeNextId();
+```
+
+##### 9. 参数校验工具 (Validate)
+```java
+import cn.hutool.core.lang.Validator;
+import cn.hutool.core.util.Assert;
+
+// ✅ 正确：使用 Validator 校验
+if (!Validator.isEmail(email)) {
+    throw new IllegalArgumentException("邮箱格式不正确");
+}
+
+// ✅ 正确：使用 Assert 断言
+Assert.notNull(user, "用户不能为空");
+Assert.isTrue(age >= 18, "年龄必须大于等于18岁");
+```
+
+#### 使用场景对照表
+
+| 操作 | JDK 原生 | Hutool 推荐 |
+|------|----------|------------|
+| 集合初始化 | `new ArrayList<>()` | `CollUtil.newArrayList()` |
+| 集合判空 | `list == null \|\| list.isEmpty()` | `CollUtil.isEmpty(list)` |
+| 字符串判空 | `str == null \|\| str.trim().isEmpty()` | `StrUtil.isBlank(str)` |
+| Map 初始化 | `new HashMap<>()` | `CollUtil.newHashMap()` 或 `MapUtil.builder()` |
+| 对象判空 | `obj == null` | `ObjectUtil.isNull(obj)` |
+| JSON 序列化 | `ObjectMapper.writeValueAsString()` | `JSONUtil.toJsonStr()` |
+| ID 生成 | `UUID.randomUUID()` | `UUID.randomUUID().toString()` 或 `IdUtil.getSnowflakeNextId()` |
+
+#### 注意事项
+1. **筹码计算**: 本项目筹码计算必须使用 `ChipCalculator`，不能被 Hutool 的 `NumberUtil` 替代
+2. **溢出检查**: 涉及溢出检查的数值计算必须使用 `ChipCalculator`
+3. **线程安全**: 多线程环境下的集合操作仍需使用 `ConcurrentHashMap` 等并发容器
 
 ### Java 项目特定规范 (Pocket Holdem 4j)
 
@@ -53,26 +226,6 @@ public Optional<Player> findPlayerById(String id) { }
 public List<Card> getCommunityCards() {
     return communityCards != null ? communityCards : Collections.emptyList();
 }
-```
-
-#### 并发安全
-```java
-// ✅ 房间级别锁保护线程安全
-public class Room {
-    private final ReentrantLock lock = new ReentrantLock();
-    
-    public void processAction(Player player, Action action) {
-        lock.lock();
-        try {
-            // 处理玩家操作
-        } finally {
-            lock.unlock();
-        }
-    }
-}
-
-// ✅ 使用 ConcurrentHashMap 管理共享状态
-private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 ```
 
 #### 导入顺序
@@ -110,24 +263,6 @@ int getAge() {
     // 业务规则：周岁计算，出生当年算 1 岁
     return age + 1;
 }
-```
-
-```python
-# ✅ 正确：中文注释解释业务逻辑
-def calculate_loan_interest(principal: float, rate: float, days: int) -> float:
-    """
-    计算贷款利息
-
-    Args:
-        principal: 本金金额
-        rate: 日利率
-        days: 计息天数
-
-    Returns:
-        应计利息金额
-    """
-    # 按日计息，到期一次性还本付息
-    return principal * rate * days
 ```
 
 ### 注释位置规范
@@ -203,73 +338,12 @@ async function fetchUserData(userId: string): Promise<UserData> {
 }
 ```
 
-## 类型安全
-
-### TypeScript/JavaScript
-- **禁止使用**: `any` 类型（除非临时处理第三方库）
-- **必须使用**: 显式类型定义、联合类型、泛型
-
-### Python
-- **必须使用**: 类型提示 (Type Hints)
-- **类型检查**: 使用 mypy 或 pyright 进行静态类型检查
-
-## Docker 与命令行规范
-
-### Docker Compose V2 语法
-- ✅ **正确**: `docker compose up -d`
-- ❌ **错误**: `docker-compose up -d`
-
-### HuggingFace 模型下载
-- ✅ **正确**: `hf download --resume-download <model_id>`
-- ❌ **错误**: `huggingface-cli download <model_id>`
-
-### 前端包管理
-- ✅ **正确**: `pnpm install`, `pnpm add <package>`
-- ❌ **错误**: `npm install`, `yarn add`
-
-## Git 提交规范
-
-### 提交消息格式
-- **必须使用中文描述**
-- 格式: `<类型>(<范围>): <描述>`
-- 示例:
-  - `feat(用户模块): 新增用户登录功能`
-  - `fix(支付模块): 修复订单金额计算错误`
-  - `docs(README): 更新部署文档`
-
-### 提交类型
-- `feat`: 新功能
-- `fix`: Bug 修复
-- `docs`: 文档更新
-- `style`: 代码格式（不影响功能）
-- `refactor`: 重构
-- `perf`: 性能优化
-- `test`: 测试相关
-- `chore`: 构建或辅助工具修改
-
-## 文件同步检查
-
-### README.md 同步
-- 新增功能必须同步更新 README.md
-- API 变更需要更新接口文档
-- 配置变更需要更新部署文档
-
-### 文件命名
-- **配置文件**: `config.yaml`, `application.yml`
-- **数据库脚本**: `V1__init_schema.sql`, `V2__add_user_table.sql`
-- **测试文件**: `*Test.java`, `*_test.py`, `*.spec.ts`
-
 ## 特定语言最佳实践
 
 ### Java 最佳实践
 - **Lombok**: 合理使用 `@Data`, `@Builder`, `@AllArgsConstructor`
 - **Stream API**: 优先使用流式操作处理集合
 - **Optional**: 避免 null 检查，使用 Optional 包装
-
-### Python 最佳实践
-- **虚拟环境**: 使用 conda 或 venv
-- **依赖管理**: 使用 `requirements.txt` 或 `pyproject.toml`
-- **日志规范**: 使用 `logging` 模块，统一日志格式
 
 ### 前端最佳实践
 - **Ant Design**: 优先使用标准组件
