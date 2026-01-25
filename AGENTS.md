@@ -164,7 +164,7 @@ pocket-holdem-4j/
 | 测试用例 | `server/src/poker.test.ts` | `test/*Test.java` |
 
 ---
-
+<!-- 
 ## 📝 文档更新规范
 
 每次修改代码后，**必须**调用 `commit-manager` subagent 进行提交：
@@ -175,7 +175,7 @@ pocket-holdem-4j/
 
 **commit-manager 路径**：`/Users/Hana/.config/opencode/agents/commit-manager.md`
 
----
+--- -->
 
 ## 🔄 工作流程总结
 
@@ -183,5 +183,5 @@ pocket-holdem-4j/
 2. **编码中**: 中文注释，遵循代码风格规范（加载 `antigravity-code-style`）
 3. **编码后**:
    - 运行测试（如需审查则加载 `antigravity-code-reviewer`）
-   - 调用 `commit-manager` 提交代码
+   <!-- - 调用 `commit-manager` 提交代码 -->
    - 在 `docs/PLAN.md` 标记完成的任务
