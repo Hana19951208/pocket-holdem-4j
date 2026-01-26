@@ -153,17 +153,13 @@
   - 测试: RankTest.java (~3个测试)
 
 ##### 1.2 游戏状态枚举
-- [ ] **GamePhase.java** - 游戏阶段
-  - 值: PRE_FLOP, FLOP, TURN, RIVER, SHOWDOWN
-  - 测试: GamePhaseTest.java (~1个测试)
+- [x] **GamePhase.java** - 游戏阶段（优化：添加辅助方法）
+- [x] **ActionType.java** - 玩家操作类型（优化：添加辅助方法）
   
-- [ ] **ActionType.java** - 玩家操作类型
-  - 值: FOLD, CHECK, CALL, RAISE, ALL_IN
-  - 测试: ActionTypeTest.java (~1个测试)
-  
-- [ ] **PlayerStatus.java** - 玩家状态
-  - 值: WAITING, PLAYING, FOLDED, ALL_IN, ELIMINATED
-  - 测试: PlayerStatusTest.java (~1个测试)
+- [x] **PlayerStatus.java** - 玩家状态
+   - 值: SPECTATING, WAITING, ACTIVE, FOLDED, ALL_IN, ELIMINATED
+   - 测试: PlayerStatusTest.java (~2个测试)
+   - 优化: 添加 canPlay() 方法供 Player.canPlay() 调用
 
 ##### 1.3 工具类
 - [x] **ChipCalculator.java** - 筹码计算工具类
@@ -211,72 +207,72 @@ public record EvaluatedHand(
 #### 📦 模块三：PokerEngine 核心引擎 (12 个核心方法)
 
 ##### 3.1 牌组管理 (3 个方法)
-- [ ] `createDeck()` - 创建52张标准牌组
+- [x] `createDeck()` - 创建52张标准牌组
   - 测试: ~4个测试（数量、唯一性、顺序）
   
-- [ ] `shuffleDeck()` - Fisher-Yates 洗牌算法
+- [x] `shuffleDeck()` - Fisher-Yates 洗牌算法
   - 测试: ~4个测试（随机性、唯一性、原地操作）
   
-- [ ] `dealCards()` - 从牌堆顶部抽牌
+- [x] `dealCards()` - 从牌堆顶部抽牌
   - 测试: ~4个测试（数量、移除、顺序、边界）
 
 ##### 3.2 发牌逻辑 (2 个方法)
-- [ ] `dealHoleCards()` - 发底牌（每人2张）
+- [x] `dealHoleCards()` - 发底牌（每人2张）
   - 测试: ~4个测试（每人2张、数量、唯一性、顺序）
   
-- [ ] `dealCommunityCards()` - 发公共牌（烧牌+发牌）
+- [x] `dealCommunityCards()` - 发公共牌（烧牌+发牌）
   - 测试: ~5个测试（翻牌3张、转牌1张、河牌1张、烧牌、边界）
 
 ##### 3.3 牌型评估 (3 个核心方法)
-- [ ] `evaluateHand()` - 7选5最佳组合（21种组合）
+- [x] `evaluateHand()` - 7选5最佳组合（21种组合）
   - 测试: ~3个测试（7张牌输入、最佳5张、组合验证）
 
-- [x] `evaluateFiveCards()` - 5张牌牌型识别（基础框架）
-  - 已实现基础框架：排序、评分、返回 EvaluatedHand
-   - 测试: ~11个测试（10种牌型 + 轮盘顺）
-     - [x] 高牌（基础测试通过）
+- [x] `evaluateFiveCards()` - 5张牌牌型识别（完整实现）
+   - 已实现完整框架：排序、评分、返回 EvaluatedHand
+   - 测试: ~50个测试（完整覆盖10种牌型）
+     - [x] 高牌
      - [x] 顺子（含轮盘顺 A-2-3-4-5）
      - [x] 同花
      - [x] 同花顺
-     - [ ] 皇家同花顺
-     - [ ] 四条
-     - [ ] 葫芦
-     - [ ] 三条
-     - [ ] 两对
-     - [ ] 一对
+     - [x] 皇家同花顺
+     - [x] 四条
+     - [x] 葫芦
+     - [x] 三条
+     - [x] 两对
+     - [x] 一对
 
 - [x] `compareHands()` - 两手牌比较（基础框架）
   - 测试: ~4个测试（不同牌型、同牌型踢脚、平局、复杂比较）
 
 ##### 3.4 辅助评估方法 (4 个私有方法)
-- [ ] `isFlush()` - 同花检测
+- [x] `isFlush()` - 同花检测（内联实现）
   - 测试: ~2个测试
   
-- [ ] `getStraight()` - 顺子检测（含轮盘顺）
+- [x] `getStraight()` - 顺子检测（含轮盘顺，内联为 detectStraight）
   - 测试: ~4个测试（普通顺子、轮盘顺、非顺子、连续）
   
-- [ ] `getGroups()` - 牌面分组分析
+- [x] `getGroups()` - 牌面分组分析（内联为 groupCards）
   - 测试: ~4个测试（四条、葫芦、两对、无分组）
   
-- [ ] `calculateScore()` - 综合得分计算
+- [x] `calculateScore()` - 综合得分计算
   - 测试: ~1个测试
 
 ##### 3.5 组合算法 (1 个私有方法)
-- [ ] `getCombinations()` - C(n,k) 组合算法
+- [x] `getCombinations()` - C(n,k) 组合算法
   - 测试: ~3个测试（C(7,5)=21、唯一性、边界）
 
 ---
 
-#### 📦 模块四：边池计算算法 (2 个方法)
+#### 📦 模块四：底池计算算法 (2 个方法)
 
-##### 4.1 SidePotCalculator.java
-- [ ] `calculateSidePots()` - 核心边池算法
-  - 算法: 按玩家总投入额排序 → 逐层切割 → 弃牌玩家排除
-  - 测试: ~7个测试（简单边池、多边池、弃牌排除、无边池、全All-In、顺序、金额）
+##### 4.1 PotCalculator.java
+- [x] `calculateSidePots()` - 边池计算算法
+  - 算法：按玩家投入排序 → 逐层切割 → 创建主池和边池
+  - 测试：~7个测试（简单边池、多边池、弃牌排除、无边池、全All-In、顺序、金额）
   
 - [x] `awardPots()` - 底池分配
-  - 规则: 单人获胜、多人平分、余数给靠前玩家
-  - 测试: 4个测试（单人、2人平、多人平、余数、多池、资格）
+  - 规则：单人获胜、多人平分、余数给靠前玩家
+  - 测试：4个测试（单人、2人平、多人平、余数、多池、资格）
 
 ---
 

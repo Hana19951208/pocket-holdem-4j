@@ -41,17 +41,17 @@ public final class PokerEngine {
         CardGroups groups = groupCards(sorted);
         Card[] straight = detectStraight(sorted);
         boolean isFlush = Arrays.stream(cards)
-            .map(Card::suit)
-            .distinct()
-            .count() == 1;
+                .map(Card::suit)
+                .distinct()
+                .count() == 1;
 
         if (log.isTraceEnabled()) {
-            log.trace("评估手牌: {}, 同花: {}, 顺子: {}", 
-                Arrays.toString(sorted), isFlush, straight != null);
+            log.trace("评估手牌: {}, 同花: {}, 顺子: {}",
+                    Arrays.toString(sorted), isFlush, straight != null);
         }
 
         // 2. 依次判断牌型（从大到小）
-        
+
         // 皇家同花顺 & 同花顺
         if (isFlush && straight != null) {
             if (straight[0].rank() == Rank.ACE && straight[1].rank() == Rank.KING) {
@@ -149,15 +149,15 @@ public final class PokerEngine {
         // 特殊处理轮盘顺 (Wheel Straight): A-5-4-3-2
         // 原始排序为: A(14), 5(5), 4(4), 3(3), 2(2)
         if (sortedCards[0].rank() == Rank.ACE &&
-            sortedCards[1].rank() == Rank.FIVE &&
-            sortedCards[2].rank() == Rank.FOUR &&
-            sortedCards[3].rank() == Rank.THREE &&
-            sortedCards[4].rank() == Rank.TWO) {
+                sortedCards[1].rank() == Rank.FIVE &&
+                sortedCards[2].rank() == Rank.FOUR &&
+                sortedCards[3].rank() == Rank.THREE &&
+                sortedCards[4].rank() == Rank.TWO) {
 
             // 重新排列为: 5-4-3-2-A (A作为1使用)
             return new Card[] {
-                sortedCards[1], sortedCards[2], sortedCards[3],
-                sortedCards[4], sortedCards[0]
+                    sortedCards[1], sortedCards[2], sortedCards[3],
+                    sortedCards[4], sortedCards[0]
             };
         }
 
@@ -217,8 +217,8 @@ public final class PokerEngine {
             Card[] bestCards) {
 
         Rank[] kickers = Arrays.stream(bestCards)
-            .map(Card::rank)
-            .toArray(Rank[]::new);
+                .map(Card::rank)
+                .toArray(Rank[]::new);
 
         long score = calculateScore(rank, kickers);
 
@@ -233,7 +233,7 @@ public final class PokerEngine {
      * 从手牌和公共牌中找出最佳5张牌组合
      * 使用组合算法遍历所有 C(7,5) = 21 种可能性
      * 
-     * @param holeCards 2张手牌
+     * @param holeCards      2张手牌
      * @param communityCards 3-5张公共牌
      * @return 最佳牌型评估结果
      */
@@ -241,7 +241,7 @@ public final class PokerEngine {
         if (holeCards == null || communityCards == null) {
             throw new IllegalArgumentException("手牌和公共牌不能为空");
         }
-        
+
         int totalCards = holeCards.length + communityCards.length;
         if (totalCards < 5) {
             throw new IllegalArgumentException("总牌数不足5张，无法评估");
@@ -331,5 +331,171 @@ public final class PokerEngine {
         }
 
         return score;
+    }
+
+    // ==================== 牌组管理方法 ====================
+
+    /**
+     * 创建52张标准扑克牌组
+     * 牌组顺序：按花色从 clubs → diamonds → hearts → spades，
+     * 每个花色内部按点数从 ace → 2 降序排列
+     *
+     * @return 52张牌的列表
+     */
+    public static List<Card> createDeck() {
+        List<Card> deck = new ArrayList<>(52);
+
+        // 外层循环：花色（CLUBS → DIAMONDS → HEARTS → SPADES）
+        for (Suit suit : Suit.values()) {
+            // 内层循环：点数（ACE → 2 降序）
+            for (Rank rank : Rank.values()) {
+                deck.add(Card.of(suit.getValue(), rank.getName()));
+            }
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("创建牌组完成，共{}张牌", deck.size());
+        }
+
+        return deck;
+    }
+
+    /**
+     * Fisher-Yates 洗牌算法（原地打乱）
+     * 时间复杂度：O(n)
+     * 线程安全：每次调用操作不同的牌组实例，无共享状态
+     *
+     * @param deck 牌组（会被修改）
+     */
+    public static void shuffleDeck(List<Card> deck) {
+        if (deck == null || deck.size() <= 1) {
+            return; // 空牌组或单张牌无需洗牌
+        }
+
+        Random random = new Random();
+        int n = deck.size();
+
+        // 从后向前，每次随机交换
+        for (int i = n - 1; i > 0; i--) {
+            // 生成 [0, i] 的随机索引
+            int j = random.nextInt(i + 1);
+
+            // 交换 deck[i] 和 deck[j]
+            Card temp = deck.get(i);
+            deck.set(i, deck.get(j));
+            deck.set(j, temp);
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("牌组洗牌完成");
+        }
+    }
+
+    /**
+     * 从牌堆顶部抽取指定数量的牌
+     *
+     * @param deck  牌组（会被修改）
+     * @param count 要抽取的数量
+     * @return 抽取的牌列表（如果牌堆不足，返回全部剩余牌）
+     */
+    public static List<Card> dealCards(List<Card> deck, int count) {
+        if (deck == null || count <= 0) {
+            return new ArrayList<>();
+        }
+
+        // 计算实际可抽取的数量
+        int actualCount = Math.min(count, deck.size());
+
+        if (actualCount == 0) {
+            return new ArrayList<>();
+        }
+
+        // 抽取顶部的牌
+        List<Card> dealt = new ArrayList<>(deck.subList(0, actualCount));
+
+        // 从牌堆移除已抽取的牌
+        deck.subList(0, actualCount).clear();
+
+        if (log.isDebugEnabled()) {
+            log.debug("从牌堆抽取{}张牌，剩余{}张", actualCount, deck.size());
+        }
+
+        return dealt;
+    }
+
+    /**
+     * 给多个玩家发底牌（每人2张）
+     * 发牌顺序：从索引0开始，每人依次发1张，循环2轮
+     *
+     * @param deck        牌组（会被修改）
+     * @param playerCount 玩家数量
+     * @return Map<玩家索引, 手牌列表>
+     */
+    public static Map<Integer, List<Card>> dealHoleCards(List<Card> deck, int playerCount) {
+        if (deck == null || playerCount <= 0) {
+            return new HashMap<>();
+        }
+
+        Map<Integer, List<Card>> holeCards = new HashMap<>();
+
+        // 循环2轮（每人2张）
+        for (int round = 0; round < 2; round++) {
+            for (int playerIndex = 0; playerIndex < playerCount; playerIndex++) {
+                if (deck.isEmpty()) {
+                    break; // 牌堆不足，停止发牌
+                }
+
+                Card card = deck.remove(0);
+                holeCards.computeIfAbsent(playerIndex, k -> new ArrayList<>()).add(card);
+            }
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("发底牌完成，玩家数: {}, 每轮发牌: {}", playerCount, playerCount * 2);
+        }
+
+        return holeCards;
+    }
+
+    /**
+     * 发公共牌
+     * FLOP: 烧1张 + 发3张
+     * TURN: 烧1张 + 发1张
+     * RIVER: 烧1张 + 发1张
+     * PRE_FLOP/SHOWDOWN: 不发牌
+     *
+     * @param deck  牌组（会被修改）
+     * @param phase 当前游戏阶段
+     * @return 本轮发的公共牌列表
+     */
+    public static List<Card> dealCommunityCards(List<Card> deck, GamePhase phase) {
+        if (deck == null || deck.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return switch (phase) {
+            case FLOP -> {
+                // 烧1张 + 发3张
+                if (!deck.isEmpty())
+                    deck.remove(0);
+                List<Card> flop = dealCards(deck, 3);
+                yield flop;
+            }
+            case TURN -> {
+                // 烧1张 + 发1张
+                if (!deck.isEmpty())
+                    deck.remove(0);
+                List<Card> turn = dealCards(deck, 1);
+                yield turn;
+            }
+            case RIVER -> {
+                // 烧1张 + 发1张
+                if (!deck.isEmpty())
+                    deck.remove(0);
+                List<Card> river = dealCards(deck, 1);
+                yield river;
+            }
+            default -> new ArrayList<>(); // PRE_FLOP, SHOWDOWN 不发牌
+        };
     }
 }

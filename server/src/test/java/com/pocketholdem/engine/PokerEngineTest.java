@@ -3,7 +3,14 @@ package com.pocketholdem.engine;
 import com.pocketholdem.model.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Map;
 
 @DisplayName("扑克引擎框架测试")
 class PokerEngineTest {
@@ -432,8 +439,7 @@ class PokerEngineTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> PokerEngine.evaluateFiveCards(empty)
-        );
+                () -> PokerEngine.evaluateFiveCards(empty));
 
         assertEquals("必须提供5张牌进行评估", exception.getMessage());
     }
@@ -443,8 +449,7 @@ class PokerEngineTest {
     void nullArrayShouldThrowException() {
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> PokerEngine.evaluateFiveCards(null)
-        );
+                () -> PokerEngine.evaluateFiveCards(null));
 
         assertEquals("必须提供5张牌进行评估", exception.getMessage());
     }
@@ -458,8 +463,7 @@ class PokerEngineTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> PokerEngine.evaluateFiveCards(single)
-        );
+                () -> PokerEngine.evaluateFiveCards(single));
 
         assertEquals("必须提供5张牌进行评估", exception.getMessage());
     }
@@ -476,8 +480,7 @@ class PokerEngineTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> PokerEngine.evaluateFiveCards(four)
-        );
+                () -> PokerEngine.evaluateFiveCards(four));
 
         assertEquals("必须提供5张牌进行评估", exception.getMessage());
     }
@@ -496,8 +499,7 @@ class PokerEngineTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> PokerEngine.evaluateFiveCards(six)
-        );
+                () -> PokerEngine.evaluateFiveCards(six));
 
         assertEquals("必须提供5张牌进行评估", exception.getMessage());
     }
@@ -515,8 +517,7 @@ class PokerEngineTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> PokerEngine.evaluateHand(null, community)
-        );
+                () -> PokerEngine.evaluateHand(null, community));
 
         assertEquals("手牌和公共牌不能为空", exception.getMessage());
     }
@@ -531,8 +532,7 @@ class PokerEngineTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> PokerEngine.evaluateHand(hole, null)
-        );
+                () -> PokerEngine.evaluateHand(hole, null));
 
         assertEquals("手牌和公共牌不能为空", exception.getMessage());
     }
@@ -552,8 +552,7 @@ class PokerEngineTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> PokerEngine.evaluateHand(hole, community)
-        );
+                () -> PokerEngine.evaluateHand(hole, community));
 
         assertEquals("总牌数不足5张，无法评估", exception.getMessage());
     }
@@ -824,5 +823,237 @@ class PokerEngineTest {
 
         EvaluatedHand result = PokerEngine.evaluateFiveCards(hand);
         assertEquals(HandRank.THREE_OF_A_KIND, result.rank());
+    }
+
+    // ==================== 牌组管理测试 ====================
+
+    /**
+     * 牌组管理测试类
+     * 测试 createDeck(), shuffleDeck(), dealCards() 方法
+     */
+    @DisplayName("牌组管理测试")
+    @Nested
+    class CardDeckTests {
+
+        @Test
+        @DisplayName("createDeck 应该创建52张牌")
+        void testCreateDeckHas52Cards() {
+            List<Card> deck = PokerEngine.createDeck();
+            assertEquals(52, deck.size(), "牌组应该有52张牌");
+        }
+
+        @Test
+        @DisplayName("createDeck 所有牌应该唯一")
+        void testCreateDeckAllUnique() {
+            List<Card> deck = PokerEngine.createDeck();
+            Set<Card> uniqueCards = new HashSet<>(deck);
+            assertEquals(52, uniqueCards.size(), "所有牌应该唯一");
+        }
+
+        @Test
+        @DisplayName("createDeck 应该包含所有52种组合")
+        void testCreateDeckAllCombinations() {
+            List<Card> deck = PokerEngine.createDeck();
+            for (Suit suit : Suit.values()) {
+                for (Rank rank : Rank.values()) {
+                    Card expectedCard = Card.of(suit.getValue(), rank.getName());
+                    assertTrue(deck.contains(expectedCard),
+                            "牌组应包含: " + suit.getValue() + " " + rank.getValue());
+                }
+            }
+        }
+
+        @Test
+        @DisplayName("createDeck 默认顺序正确")
+        void testCreateDeckOrder() {
+            List<Card> deck = PokerEngine.createDeck();
+            // 验证默认顺序（按suit顺序，再按rank从大到小）
+            // 期望: clubs, diamonds, hearts, spades 每种花色从 ace 到 2
+            for (int i = 0; i < deck.size(); i++) {
+                Card card = deck.get(i);
+                int expectedSuitIndex = i / 13; // 每13张牌换一种花色
+                Suit expectedSuit = Suit.values()[expectedSuitIndex];
+                assertEquals(expectedSuit, card.suit(),
+                        "第" + (i + 1) + "张牌的花色应为" + expectedSuit.getValue());
+            }
+        }
+
+        // ==================== 洗牌测试 ====================
+
+        @Test
+        @DisplayName("shuffleDeck 洗牌后数量不变")
+        void testShuffleDeckSizeUnchanged() {
+            List<Card> deck = PokerEngine.createDeck();
+            int originalSize = deck.size();
+            PokerEngine.shuffleDeck(deck);
+            assertEquals(originalSize, deck.size(), "洗牌后数量应不变");
+        }
+
+        @Test
+        @DisplayName("shuffleDeck 随机性验证")
+        void testShuffleDeckRandomness() {
+            List<Card> deck1 = PokerEngine.createDeck();
+            List<Card> deck2 = PokerEngine.createDeck();
+
+            PokerEngine.shuffleDeck(deck1);
+            PokerEngine.shuffleDeck(deck2);
+
+            // 两次洗牌结果应不同（概率极低相同）
+            // 注意：由于随机性，这个测试偶尔可能失败，但概率极低
+            assertNotEquals(deck1, deck2, "两次洗牌结果应不同（概率99.9999%以上）");
+        }
+
+        @Test
+        @DisplayName("shuffleDeck 洗牌后无重复牌")
+        void testShuffleDeckAllUnique() {
+            List<Card> deck = PokerEngine.createDeck();
+            PokerEngine.shuffleDeck(deck);
+
+            Set<Card> uniqueCards = new HashSet<>(deck);
+            assertEquals(52, uniqueCards.size(), "洗牌后应无重复牌");
+        }
+
+        @Test
+        @DisplayName("shuffleDeck 原地操作验证")
+        void testShuffleDeckImmutability() {
+            List<Card> deck = PokerEngine.createDeck();
+            // 记录原始引用
+            List<Card> originalReference = deck;
+
+            PokerEngine.shuffleDeck(deck);
+
+            // 验证是原地操作（引用不变）
+            assertSame(originalReference, deck, "洗牌应为原地操作（引用不变）");
+        }
+
+        // ==================== 发牌测试 ====================
+
+        @Test
+        @DisplayName("dealCards 应该抽取指定数量的牌")
+        void testDealCardsCorrectCount() {
+            List<Card> deck = PokerEngine.createDeck();
+            int originalSize = deck.size();
+
+            List<Card> dealt = PokerEngine.dealCards(deck, 5);
+
+            assertEquals(5, dealt.size(), "应抽取5张牌");
+            assertEquals(originalSize - 5, deck.size(), "牌组应减少5张");
+        }
+
+        @Test
+        @DisplayName("dealCards 应该从顶部抽牌")
+        void testDealCardsFromTop() {
+            List<Card> deck = PokerEngine.createDeck();
+            // 记录前5张牌
+            List<Card> firstFive = new ArrayList<>(deck.subList(0, 5));
+
+            List<Card> dealt = PokerEngine.dealCards(deck, 5);
+
+            assertEquals(firstFive, dealt, "应从牌堆顶部抽牌");
+        }
+
+        @Test
+        @DisplayName("dealCards 牌堆不足时应返回全部剩余")
+        void testDealCardsInsufficient() {
+            List<Card> deck = PokerEngine.createDeck();
+            deck.subList(0, 48).clear(); // 只剩4张
+
+            List<Card> dealt = PokerEngine.dealCards(deck, 5);
+
+            assertEquals(4, dealt.size(), "应返回全部剩余4张牌");
+            assertTrue(deck.isEmpty(), "牌堆应为空");
+        }
+
+        @Test
+        @DisplayName("dealCards 空牌堆应返回空列表")
+        void testDealCardsEmptyDeck() {
+            List<Card> deck = new ArrayList<>();
+
+            List<Card> dealt = PokerEngine.dealCards(deck, 5);
+
+            assertTrue(dealt.isEmpty(), "空牌堆应返回空列表");
+        }
+
+        // ==================== 底牌和公共牌测试 ====================
+
+        @Test
+        @DisplayName("dealHoleCards 应该每人发2张牌")
+        void testDealHoleCardsTwoPerPlayer() {
+            List<Card> deck = PokerEngine.createDeck();
+            Map<Integer, List<Card>> holeCards = PokerEngine.dealHoleCards(deck, 3);
+
+            assertEquals(3, holeCards.size(), "应为3个玩家发牌");
+            for (Map.Entry<Integer, List<Card>> entry : holeCards.entrySet()) {
+                assertEquals(2, entry.getValue().size(), "玩家" + entry.getKey() + "应有2张底牌");
+            }
+        }
+
+        @Test
+        @DisplayName("dealHoleCards 所有底牌应唯一")
+        void testDealHoleCardsUniqueCards() {
+            List<Card> deck = PokerEngine.createDeck();
+            Map<Integer, List<Card>> holeCards = PokerEngine.dealHoleCards(deck, 4);
+
+            // 收集所有底牌
+            List<Card> allCards = new ArrayList<>();
+            for (List<Card> cards : holeCards.values()) {
+                allCards.addAll(cards);
+            }
+
+            Set<Card> uniqueCards = new HashSet<>(allCards);
+            assertEquals(allCards.size(), uniqueCards.size(), "所有底牌应唯一");
+        }
+
+        @Test
+        @DisplayName("dealHoleCards 发牌顺序正确")
+        void testDealHoleCardsOrder() {
+            List<Card> deck = PokerEngine.createDeck();
+            Map<Integer, List<Card>> holeCards = PokerEngine.dealHoleCards(deck, 3);
+
+            // 玩家0应该拿到第1张和第4张牌（A♠和9♠，假设顺序是CLUBS→DIAMONDS→HEARTS→SPADES）
+            List<Card> player0Cards = holeCards.get(0);
+            assertEquals(Card.of("clubs", "ace"), player0Cards.get(0), "玩家0第1张牌应是ACE of CLUBS");
+            assertEquals(Card.of("clubs", "nine"), player0Cards.get(1), "玩家0第2张牌应是9 of CLUBS");
+        }
+
+        @Test
+        @DisplayName("dealCommunityCards FLOP应发3张")
+        void testDealCommunityCardsFlop() {
+            List<Card> deck = PokerEngine.createDeck();
+            List<Card> community = PokerEngine.dealCommunityCards(deck, GamePhase.FLOP);
+
+            assertEquals(3, community.size(), "FLOP应发3张公共牌");
+            assertEquals(52 - 1 - 3, deck.size(), "牌堆应减少4张（1张烧牌+3张公共牌）");
+        }
+
+        @Test
+        @DisplayName("dealCommunityCards TURN应发1张")
+        void testDealCommunityCardsTurn() {
+            List<Card> deck = PokerEngine.createDeck();
+            List<Card> community = PokerEngine.dealCommunityCards(deck, GamePhase.TURN);
+
+            assertEquals(1, community.size(), "TURN应发1张公共牌");
+            assertEquals(52 - 1 - 1, deck.size(), "牌堆应减少2张（1张烧牌+1张公共牌）");
+        }
+
+        @Test
+        @DisplayName("dealCommunityCards RIVER应发1张")
+        void testDealCommunityCardsRiver() {
+            List<Card> deck = PokerEngine.createDeck();
+            List<Card> community = PokerEngine.dealCommunityCards(deck, GamePhase.RIVER);
+
+            assertEquals(1, community.size(), "RIVER应发1张公共牌");
+            assertEquals(52 - 1 - 1, deck.size(), "牌堆应减少2张（1张烧牌+1张公共牌）");
+        }
+
+        @Test
+        @DisplayName("dealCommunityCards PRE_FLOP不应发牌")
+        void testDealCommunityCardsPreFlop() {
+            List<Card> deck = PokerEngine.createDeck();
+            List<Card> community = PokerEngine.dealCommunityCards(deck, GamePhase.PRE_FLOP);
+
+            assertTrue(community.isEmpty(), "PRE_FLOP不应发公共牌");
+            assertEquals(52, deck.size(), "牌堆应不变");
+        }
     }
 }
